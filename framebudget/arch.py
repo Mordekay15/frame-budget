@@ -199,3 +199,93 @@ class CachedAsync(AsyncFallback):
     def stats(self) -> dict:
         return {**super().stats(), "hits": self.hits, "misses": self.misses,
                 "mismatches": self.mismatches, "cache_size": len(self.cache)}
+
+
+class PrefetchAsync(CachedAsync):
+    """Step 8: guess the next decision point's state when a wave starts, and ask early.
+
+    When a wave spawns we know its size and multiplier and have an estimate of
+    the player's kill rate, so we can predict the state at the end of the wave:
+    expected damage plus or minus one standard deviation (the same normal model
+    the rules use). For each predicted state whose signature is not cached yet,
+    a request goes out immediately. Those requests have the whole wave (several
+    seconds) to come back, instead of the deadline. When the wave is cleared, the
+    real state is looked up in the cache exactly as in Step 7; if the prediction
+    landed in the right bucket, it is a hit.
+
+    The cost: requests for predicted states that never happen are wasted.
+    """
+
+    name = "prefetch"
+
+    def __init__(self, channel, budget_ms: float, coarse: float = 1.0,
+                 cache: dict | None = None, oracle=None, spread=(-1.0, 0.0, 1.0)):
+        super().__init__(channel, budget_ms, coarse, cache, oracle)
+        self.spread = spread
+        self._seen_wave = 0
+        self._pending_keys: set = set()
+        self._prefetched: set = set()
+        self._used: set = set()
+        self.prefetch_requests = self.prefetch_tokens = 0
+
+    def on_tick(self, game, clock) -> None:
+        if game.phase == "fight" and game.wave != self._seen_wave:
+            self._seen_wave = game.wave
+            for st in self.predict(game):
+                key = self.signature(st, self.coarse)
+                if key in self.cache or key in self._pending_keys:
+                    continue
+                self._pending_keys.add(key)
+                self._next_id += 1
+                self.prefetch_requests += 1
+                self.channel.submit(self._next_id, st, clock.now(), tag=("prefetch", key))
+        super().on_tick(game, clock)
+
+    def predict(self, game) -> list:
+        """Likely states at the end of the current wave."""
+        import statistics
+
+        from .decision import DecisionState
+        from .game import MAX_HEALTH, REGEN_PER_WAVE, expected_wave_damage
+
+        rate = self.rules.kill_rate()
+        d = game.current
+        ratios = self.rules._ratios[-10:]
+        bias = statistics.fmean(ratios) if ratios else 1.0
+        rel = max(statistics.pstdev(ratios) if len(ratios) >= 3 else 0.0, 0.25)
+        mu = expected_wave_damage(d.count, d.mult, rate) * bias
+        clear = d.count / rate
+        out = []
+        for z in self.spread:
+            dmg = max(0.0, mu * (1 + z * rel))
+            health = min(MAX_HEALTH, max(0.0, game.health - dmg) + REGEN_PER_WAVE)
+            out.append(DecisionState(health, MAX_HEALTH, game.wave, d.count, d.mult,
+                                     dmg, clear, dmg / clear, rate))
+        return out
+
+    def on_decision_point(self, game, state, clock) -> None:
+        key = self.signature(state, self.coarse)
+        if key in self.cache and key in self._prefetched:
+            self._used.add(key)
+            n = len(self.events)
+            super().on_decision_point(game, state, clock)
+            ev = self.events[n]
+            ev.applied = type(ev.applied)(ev.applied.count, ev.applied.mult, source="prefetch")
+            game.next_decision = ev.applied
+            return
+        super().on_decision_point(game, state, clock)
+
+    def on_arrival(self, game, arr) -> None:
+        kind, key = arr.tag if arr.tag else (None, None)
+        if kind == "prefetch":
+            self._pending_keys.discard(key)
+            self.prefetch_tokens += arr.answer.input_tokens
+            if arr.answer.ok and arr.answer.decision is not None:
+                self.cache.setdefault(key, arr.answer.decision)
+                self._prefetched.add(key)
+            return
+        super().on_arrival(game, arr)
+
+    def stats(self) -> dict:
+        return {**super().stats(), "prefetch_requests": self.prefetch_requests,
+                "prefetch_used": len(self._used), "prefetch_tokens": self.prefetch_tokens}
