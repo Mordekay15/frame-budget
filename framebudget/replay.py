@@ -156,3 +156,30 @@ class RecordingDecider:
         self.store.save()
         if hasattr(self.live, "close"):
             self.live.close()
+
+
+class LiveAnswers:
+    """An answer source that asks the live Jev (one connection per thread).
+
+    Used to fill an AnswerStore for a whole experiment sweep (Step 9). Retries a
+    failed request a few times, because a missing answer would stop the sweep.
+    """
+
+    def __init__(self, api_key: str, retries: int = 3):
+        self.api_key = api_key
+        self.retries = retries
+        self._local = threading.local()
+
+    def answer(self, state: DecisionState, text: str) -> tuple[Decision, int]:
+        from .jev import JevClient
+
+        client = getattr(self._local, "client", None)
+        if client is None:
+            client = self._local.client = JevClient(self.api_key)
+        last = ""
+        for _ in range(self.retries):
+            r = client.decide(text)
+            if r.ok and r.decision is not None:
+                return r.decision, r.input_tokens
+            last = f"{r.http_status} {r.error}"
+        raise RuntimeError(f"Jev failed {self.retries} times: {last}")

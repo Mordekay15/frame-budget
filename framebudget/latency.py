@@ -44,6 +44,12 @@ class EmpiricalLatency:
     def sample_ms(self) -> float:
         return self.rng.choice(self.values)
 
+    @classmethod
+    def from_values(cls, values: list[float], seed: int = 0) -> "EmpiricalLatency":
+        m = cls.__new__(cls)
+        m.values, m.rng = values, random.Random(seed)
+        return m
+
 
 def latency_model(spec: str, seed: int = 0):
     """'synthetic' or a path to a CSV with a latency_ms column."""

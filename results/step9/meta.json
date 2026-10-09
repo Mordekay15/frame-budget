@@ -1,0 +1,14 @@
+{
+  "reps": 30,
+  "archs": "rules,blocking,async,cache,prefetch",
+  "budgets": "33,100,250,500",
+  "coarse": 1.0,
+  "latency": "synthetic",
+  "answers": "fake",
+  "workers": 1,
+  "out": "results/step9",
+  "games": 1260,
+  "seconds": 14.5,
+  "created": "2026-10-09T05:56:00+00:00",
+  "git_commit": "f61122b"
+}
