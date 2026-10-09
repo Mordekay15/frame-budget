@@ -1,0 +1,4 @@
+arch,budget_ms,skill,seed,died,waves_cleared,duration_s,bored,danger,in_band,mean_health,min_health,decisions,requests,deadline_met,fallback_rate,cache_hit_rate,input_tokens,tick_p99_ms,tick_max_ms,overruns,late,stale,failed
+async,250.0,weak,0,0,30,130.713,0.07574,0.0,0.92426,0.6801,0.23847,29,29,0.6896551724137931,0.3103448275862069,0.0,7255,33.6791,68.5885,0,9,0,0
+async,250.0,medium,0,0,30,103.884,0.06861,0.0,0.93139,0.71618,0.39747,29,29,0.6896551724137931,0.3103448275862069,0.0,7257,33.4364,47.0197,0,9,0,0
+async,250.0,strong,0,0,30,88.506,0.08464,0.0,0.91536,0.66566,0.24751,29,29,0.6896551724137931,0.3103448275862069,0.0,7254,33.1987,37.0352,0,9,0,0

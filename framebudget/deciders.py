@@ -68,15 +68,18 @@ class LiveJevDecider:
 class FakeAnswers:
     """What a simulated Jev answers. Offline stand-in for Jev's judgement.
 
-    It aims for a wave whose damage keeps the player around 60% health: more
-    damage when healthy, less when hurt. Gumbel noise of strength `noise` makes
+    It aims for a wave whose damage keeps the player around 80% health: more
+    damage when healthy, less when hurt. Overshooting the target damage counts
+    three times as bad as undershooting it, a simple form of caution. Gumbel noise of strength `noise` makes
     it choose a neighbouring difficulty now and then, so that it is neither
     perfect nor perfectly consistent, like a real model. noise=0 makes it
     deterministic.
     """
 
-    def __init__(self, seed: int = 0, noise: float = 0.3, target_health: float = 60.0):
+    def __init__(self, seed: int = 0, noise: float = 0.3, target_health: float = 80.0,
+                 overshoot: float = 3.0):
         self.rng = random.Random(seed)
+        self.overshoot = overshoot
         self.noise = noise
         self.target_health = target_health
 
@@ -86,7 +89,8 @@ class FakeAnswers:
         scale = max(5.0, 0.3 * abs(target) + 5.0)
         best, best_score = None, -math.inf
         for c, m in LADDER:
-            score = -abs(expected_wave_damage(c, m, rate) - target) / scale
+            miss = expected_wave_damage(c, m, rate) - target
+            score = -(miss * self.overshoot if miss > 0 else -miss) / scale
             if self.noise > 0:
                 score += self.noise * -math.log(-math.log(self.rng.random() or 1e-12))
             if score > best_score:

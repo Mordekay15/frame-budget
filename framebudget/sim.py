@@ -66,6 +66,8 @@ class EpisodeResult:
     events: list[DecisionEvent] = field(default_factory=list)
     waves: list = field(default_factory=list)
     tick_periods_ms: list[float] = field(default_factory=list)  # only with keep_ticks=True
+    budget_ms: float | None = None
+    extra: dict = field(default_factory=dict)  # architecture-specific counters
 
     def row(self) -> dict:
         """A flat dict, one row of the experiment dataset."""
@@ -73,7 +75,7 @@ class EpisodeResult:
         req = [e for e in ev if e.requested]
         n = max(1, len(ev))
         return {
-            "arch": self.arch, "skill": self.skill, "seed": self.seed,
+            "arch": self.arch, "budget_ms": self.budget_ms, "skill": self.skill, "seed": self.seed,
             "died": int(self.died), "waves_cleared": self.waves_cleared,
             "duration_s": round(self.duration_s, 3),
             **{k: round(v, 5) for k, v in self.experience.items()},
@@ -86,6 +88,7 @@ class EpisodeResult:
             "tick_p99_ms": round(self.ticks["period_p99_ms"], 4),
             "tick_max_ms": round(self.ticks["period_max_ms"], 4),
             "overruns": self.ticks["overruns"],
+            **self.extra,
         }
 
 
@@ -118,4 +121,6 @@ def run_episode(arch, skill: str = "medium", seed: int = 0, clock=None,
         ticks=tick_summary(records), events=list(getattr(arch, "events", [])),
         waves=game.waves_log,
         tick_periods_ms=[r.period * 1000 for r in records] if keep_ticks else [],
+        budget_ms=getattr(arch, "budget_ms", None),
+        extra=arch.stats() if hasattr(arch, "stats") else {},
     )
