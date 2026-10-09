@@ -134,3 +134,68 @@ class AsyncFallback:
 
     def close(self) -> None:
         self.channel.close()
+
+
+class CachedAsync(AsyncFallback):
+    """Step 7: look the state's signature up first; ask Jev only on a miss.
+
+    Hit:  the cached decision is applied at once. No request, no wait, no cost.
+    Miss: exactly like AsyncFallback (rules now, Jev in the background), and when
+          Jev's answer arrives, it is stored under the signature, even if it came
+          too late to be used this time. The next similar state will hit.
+
+    `cache` is a plain dict, shared across games if you pass the same one in:
+    one cache for all players, like a real game server would keep.
+    `oracle` (optional answer source) is asked on every hit what it would decide
+    for the exact state, to count how often the cached decision differs.
+    """
+
+    name = "cache"
+
+    def __init__(self, channel, budget_ms: float, coarse: float = 1.0,
+                 cache: dict | None = None, oracle=None):
+        super().__init__(channel, budget_ms)
+        from .cache import signature
+
+        self.signature = signature
+        self.coarse = coarse
+        self.cache = {} if cache is None else cache
+        self.oracle = oracle
+        self.hits = self.misses = self.mismatches = 0
+
+    def on_decision_point(self, game, state, clock) -> None:
+        fb = self.rules.decide(state)
+        key = self.signature(state, self.coarse)
+        cached = self.cache.get(key)
+        if cached is not None:
+            self.hits += 1
+            d = type(cached)(cached.count, cached.mult, source="cache")
+            game.next_decision = d
+            self.events.append(DecisionEvent(game.wave + 1, clock.now(), applied=d,
+                                             in_time=True, cache_hit=True))
+            if self.oracle is not None:
+                from .decision import state_to_text
+
+                fresh, _ = self.oracle.answer(state, state_to_text(state))
+                self.mismatches += fresh.key() != cached.key()
+            return
+        self.misses += 1
+        game.next_decision = fb
+        ev = DecisionEvent(game.wave + 1, clock.now(), applied=fb, fallback=True)
+        self.events.append(ev)
+        self._next_id += 1
+        self._latest = self._next_id
+        self._by_id[self._next_id] = ev
+        ev.requested = True
+        self.channel.submit(self._next_id, state, clock.now(), tag=("decision", key))
+
+    def on_arrival(self, game, arr) -> None:
+        ans = arr.answer
+        key = arr.tag[1] if arr.tag else None
+        if ans.ok and ans.decision is not None and key is not None:
+            self.cache.setdefault(key, ans.decision)
+        super().on_arrival(game, arr)
+
+    def stats(self) -> dict:
+        return {**super().stats(), "hits": self.hits, "misses": self.misses,
+                "mismatches": self.mismatches, "cache_size": len(self.cache)}
