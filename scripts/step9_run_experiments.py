@@ -22,7 +22,7 @@ import datetime as dt
 import json
 import subprocess
 import time
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 import pandas as pd
@@ -83,7 +83,13 @@ def main() -> None:
     t0 = time.time()
     if args.workers > 1:
         with ThreadPoolExecutor(args.workers) as pool:
-            rows = list(pool.map(lambda c: run_cell(setup, c), todo))
+            futures = [pool.submit(run_cell, setup, c) for c in todo]
+            for i, _ in enumerate(as_completed(futures), 1):
+                if i % 100 == 0:
+                    print(f"  {i}/{len(todo)}", flush=True)
+                    if store is not None:
+                        store.save()  # an interrupted record run keeps what it has
+            rows = [f.result() for f in futures]  # in design order, whatever finished first
     else:
         rows = []
         for i, c in enumerate(todo, 1):
