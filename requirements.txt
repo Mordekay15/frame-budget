@@ -1,0 +1,6 @@
+# Only the analysis scripts and tests need these; talking to Jev uses the standard library.
+pandas>=2.0
+matplotlib>=3.7
+numpy>=1.24
+tabulate>=0.9   # for pandas .to_markdown()
+pytest>=7.0
