@@ -65,6 +65,7 @@ class EpisodeResult:
     ticks: dict
     events: list[DecisionEvent] = field(default_factory=list)
     waves: list = field(default_factory=list)
+    tick_periods_ms: list[float] = field(default_factory=list)  # only with keep_ticks=True
 
     def row(self) -> dict:
         """A flat dict, one row of the experiment dataset."""
@@ -89,7 +90,8 @@ class EpisodeResult:
 
 
 def run_episode(arch, skill: str = "medium", seed: int = 0, clock=None,
-                waves: int | None = None, max_ticks: int = 200_000) -> EpisodeResult:
+                waves: int | None = None, max_ticks: int = 200_000,
+                keep_ticks: bool = False) -> EpisodeResult:
     """Play one game to the end (death or last wave) and collect everything."""
     clock = clock or SimClock()
     rng = random.Random(seed)
@@ -115,4 +117,5 @@ def run_episode(arch, skill: str = "medium", seed: int = 0, clock=None,
         experience=experience_metrics(game.health_trace),
         ticks=tick_summary(records), events=list(getattr(arch, "events", [])),
         waves=game.waves_log,
+        tick_periods_ms=[r.period * 1000 for r in records] if keep_ticks else [],
     )

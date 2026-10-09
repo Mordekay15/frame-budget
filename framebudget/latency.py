@@ -21,3 +21,32 @@ class LognormalLatency:
 
     def sample_ms(self) -> float:
         return self.rng.lognormvariate(self.mu, self.sigma)
+
+
+class EmpiricalLatency:
+    """Draws latencies at random from real measurements (e.g. the Step 0 CSV).
+
+    Resampling measured values keeps the true shape of the distribution,
+    including its slow tail, without assuming any formula.
+    """
+
+    def __init__(self, csv_path: str, condition: str = "warm", seed: int = 0):
+        import csv
+
+        with open(csv_path, newline="") as f:
+            rows = [r for r in csv.DictReader(f) if r.get("condition", condition) == condition]
+        # A failed request is treated as never arriving.
+        self.values = [float(r["latency_ms"]) if r.get("ok", "1") == "1" else math.inf for r in rows]
+        if not self.values:
+            raise ValueError(f"no '{condition}' rows in {csv_path}")
+        self.rng = random.Random(seed)
+
+    def sample_ms(self) -> float:
+        return self.rng.choice(self.values)
+
+
+def latency_model(spec: str, seed: int = 0):
+    """'synthetic' or a path to a CSV with a latency_ms column."""
+    if spec == "synthetic":
+        return LognormalLatency(seed=seed)
+    return EmpiricalLatency(spec, seed=seed)
