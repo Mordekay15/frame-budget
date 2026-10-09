@@ -1,0 +1,20 @@
+\begin{tabular}{llrrrrr}
+\toprule
+Architecture & Deadline & In time & Fallback & Consistency & Cost/h (USD) & Longest tick \\
+\midrule
+rules & -- & -- & -- & 1.00 & 0.0000 & 33 ms \\
+blocking & -- & 100\,\% $\pm$ 0 & 0\,\% $\pm$ 0 & 0.71 & 0.0104 & 738 ms \\
+async & 33 ms & 0\,\% $\pm$ 0 & 100\,\% $\pm$ 0 & 1.00 & 0.0104 & 33 ms \\
+async & 100 ms & 2\,\% $\pm$ 1 & 98\,\% $\pm$ 1 & 0.99 & 0.0104 & 33 ms \\
+async & 250 ms & 67\,\% $\pm$ 2 & 33\,\% $\pm$ 2 & 0.51 & 0.0104 & 33 ms \\
+async & 500 ms & 99\,\% $\pm$ 1 & 1\,\% $\pm$ 1 & 0.70 & 0.0104 & 33 ms \\
+cache & 33 ms & 9\,\% $\pm$ 1 & 91\,\% $\pm$ 1 & 0.97 & 0.0095 & 33 ms \\
+cache & 100 ms & 10\,\% $\pm$ 2 & 90\,\% $\pm$ 2 & 0.97 & 0.0095 & 33 ms \\
+cache & 250 ms & 70\,\% $\pm$ 2 & 30\,\% $\pm$ 2 & 0.99 & 0.0096 & 33 ms \\
+cache & 500 ms & 99\,\% $\pm$ 1 & 1\,\% $\pm$ 1 & 1.00 & 0.0097 & 33 ms \\
+prefetch & 33 ms & 23\,\% $\pm$ 3 & 77\,\% $\pm$ 3 & 1.00 & 0.0285 & 33 ms \\
+prefetch & 100 ms & 24\,\% $\pm$ 2 & 76\,\% $\pm$ 2 & 1.00 & 0.0285 & 33 ms \\
+prefetch & 250 ms & 73\,\% $\pm$ 2 & 27\,\% $\pm$ 2 & 1.00 & 0.0291 & 33 ms \\
+prefetch & 500 ms & 99\,\% $\pm$ 0 & 1\,\% $\pm$ 0 & 1.00 & 0.0293 & 33 ms \\
+\bottomrule
+\end{tabular}

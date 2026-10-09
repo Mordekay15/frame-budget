@@ -139,3 +139,39 @@ git push
 
 Once the CSV is on GitHub I can read it and the later steps use it as the
 latency recording (see Step 6).
+
+## 7. Everything that talks to Jev, in order
+
+Run these from the repo root on branch `step-10` (it contains all steps), with
+the virtual environment active. Commit `results/` and `data/recordings/` after each one.
+
+| # | command | what it does | requests | time |
+|---|---|---|---|---|
+| 1 | `python -m scripts.jev_hello` | first call, checks key and format | 2 | seconds |
+| 2 | `python -m scripts.step0_measure_latency` then `python -m scripts.step0_analyze results/step0/jev_latency.csv` | the latency distribution | 431 | ~3 min |
+| 3 | `python -m scripts.step1_bare_loop` | loop timing on your machine (no Jev) | 0 | ~6 min |
+| 4 | `python -m scripts.step4_blocking --live` | blocking with the real Jev, real clock | ~90 | ~5 min |
+| 5 | `python -m scripts.step5_async --live --budgets 250 --games 1` | async with real threads and real Jev | ~90 | ~5 min |
+| 6 | `python -m scripts.step6_replay --record --name jev-oct --games 5` then `python -m scripts.step6_replay --name jev-oct --games 5` | record, then prove identical replay | ~450 | ~3 min |
+| 7 | see below | the full sweep with Jev's real decisions | ~40 000 | ~30 min with 8 workers |
+| 8 | `python -m scripts.step9_consistency --live` | consistency of the real Jev | 360 | ~2 min |
+| 9 | `python -m scripts.step10_analyze` | tables and figures | 0 | seconds |
+
+**Step 7 (the sweep)** in two runs. The first asks the live Jev for every
+decision and stores the answers; the second replays them, which gives the final,
+reproducible dataset:
+
+```bash
+L=results/step0/jev_latency.csv
+python -m scripts.step9_run_experiments --latency $L --answers record:data/recordings/sweep/answers.json --workers 8
+python -m scripts.step9_run_experiments --latency $L --answers replay:data/recordings/sweep/answers.json
+python -m scripts.step10_analyze
+```
+
+At about 250 input tokens per request, 40 000 requests cost about $0.40. Start
+with `--reps 3` to check that everything works (about 4 000 requests). If the
+record run is interrupted, just start it again: answers already stored are
+reused, not requested again.
+
+All offline versions (no flags, or without `--live`) use the simulated Jev and
+run without a key, so you can always try a command offline first.
