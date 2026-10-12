@@ -31,7 +31,7 @@ Jev's real answers (`docs/JEV_GUIDE.md`, part 7).
 4. **Async is the least consistent architecture** in the middle range (250 ms):
    the same state gets Jev's answer or the rules' depending on network luck.
    Cache and prefetch are the most consistent, because they reuse one answer.
-5. **Cost is negligible in absolute terms**: around one to three US cents per hour of play.
+5. **Cost is negligible in absolute terms**: about 3 US cents per hour of play for async and cache, about 7 for prefetch (at the measured 646 tokens per request).
 
 ## Notes on the statistics
 
