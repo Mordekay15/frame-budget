@@ -7,7 +7,7 @@ one CSV row per request. Three conditions:
   cold   every request opens a new connection (cost of the handshake)
   same   one fixed state, many times (does Jev always answer the same?)
 
-Run on your own machine (needs OPENROUTER_API_KEY, see docs/JEV_GUIDE.md):
+Run on your own machine (needs TYPESAFE_API_KEY or OPENROUTER_API_KEY, see docs/JEV_GUIDE.md):
 
     python -m scripts.step0_measure_latency
     python -m scripts.step0_measure_latency --fake     # offline dry run, no key
