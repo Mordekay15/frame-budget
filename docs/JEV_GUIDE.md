@@ -164,6 +164,8 @@ the virtual environment active. Commit `results/` and `data/recordings/` after e
 decision and stores the answers; the second replays them, which gives the final,
 reproducible dataset:
 
+macOS / Linux (bash):
+
 ```bash
 L=results/step0/jev_latency.csv
 python -m scripts.step9_run_experiments --latency $L --answers record:data/recordings/sweep/answers.json --workers 8
@@ -171,7 +173,16 @@ python -m scripts.step9_run_experiments --latency $L --answers replay:data/recor
 python -m scripts.step10_analyze
 ```
 
-At about 250 input tokens per request, 46 000 requests cost about $0.50. Start
+Windows (PowerShell):
+
+```powershell
+$L = "results/step0/jev_latency.csv"
+python -m scripts.step9_run_experiments --latency $L --answers record:data/recordings/sweep/answers.json --workers 8
+python -m scripts.step9_run_experiments --latency $L --answers replay:data/recordings/sweep/answers.json
+python -m scripts.step10_analyze
+```
+
+At 646 input tokens per request (measured with `jev_hello`), 46 000 requests cost about $1.25. Start
 with `--reps 3` to check that everything works (about 4 600 requests). If the
 record run is interrupted, just start it again: answers already stored are
 reused, not requested again.
