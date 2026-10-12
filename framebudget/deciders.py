@@ -91,7 +91,7 @@ class FakeAnswers:
                 score += self.noise * -math.log(-math.log(self.rng.random() or 1e-12))
             if score > best_score:
                 best, best_score = (c, m), score
-        tokens = 180 + len(text) // 4  # close to what Jev reports for our requests
+        tokens = 575 + len(text) // 4  # matches the real Jev: 646 tokens for a typical state
         return Decision(*best, source="jev"), tokens
 
 
