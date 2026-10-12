@@ -46,7 +46,7 @@ class FakeJevClient:
         d = heuristic_answer(health, damage, self.rng)
         probs = {k: (0.7 if v == d.count else 0.1) for k, v in COUNT_KEYS.items()}
         mprobs = {k: (0.7 if v == d.mult else 0.1) for k, v in MULT_KEYS.items()}
-        tokens = 180 + len(state_text) // 4
+        tokens = 575 + len(state_text) // 4  # matches a real request (646 tokens)
         return JevResult(
             ms, True, 200, decision=d, count_confidence=0.7, mult_confidence=0.7,
             count_probs=probs, mult_probs=mprobs, input_tokens=tokens,
