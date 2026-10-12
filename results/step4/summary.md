@@ -1,10 +1,10 @@
-# Step 4: blocking architecture (simulated Jev, latency=measured)
+# Step 4: blocking architecture (LIVE Jev, real clock)
 
 | arch     |   games |   tick_p99_ms |   tick_max_ms |   blowout_mean |   blowout_max |   overruns_per_game |
 |:---------|--------:|--------------:|--------------:|---------------:|--------------:|--------------------:|
-| blocking |     150 |         98.69 |        649.12 |          16.03 |         19.67 |               24.79 |
-| rules    |     150 |         33    |         33    |           1    |          1    |                0    |
+| blocking |       3 |        107.35 |        349.18 |           9.62 |         10.58 |               28.33 |
+| rules    |       3 |         33    |         33    |           1    |          1    |                0    |
 
-Budget per tick: 33 ms. Every decision point in a blocking game is an overrun: 3718 overruns in 3718 decisions.
+Budget per tick: 33 ms. Every decision point in a blocking game is an overrun: 85 overruns in 85 decisions.
 
-**Blowout factor** = longest tick / 33 ms. Mean over games: 16.0x, worst game: 19.7x.
+**Blowout factor** = longest tick / 33 ms. Mean over games: 9.6x, worst game: 10.6x.
