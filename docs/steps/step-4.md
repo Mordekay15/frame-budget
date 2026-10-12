@@ -25,7 +25,7 @@ means no usable decision, and then every architecture falls back to the rules.
 
 **2. A simulated Jev = answers + latency.** `SimulatedJev` gets its decisions from
 `FakeAnswers` (a heuristic aiming for about 60% health, with some noise) and its
-timing from a latency model: the synthetic lognormal from Step 0, or your
+timing from a latency model: by default your measured Step 0 latencies, or a
 measured CSV. On the simulated clock, a "blocking call" simply moves virtual time
 forward by the latency, so the effect on the loop is the same as for real, but a
 whole experiment takes seconds.
@@ -38,13 +38,13 @@ run immediately, one after the other, to catch up (the zero-length ticks right
 after each spike in `tick_timeline.png`). In a real game those catch-up ticks are
 visible as a freeze followed by a jump.
 
-## Results (simulated, synthetic latency; `results/step4/summary.md`)
+## Results (simulated Jev, your measured latencies; `results/step4/summary.md`)
 
 - **Every** decision point overruns the 33 ms budget.
-- Blowout factor (longest tick / 33 ms): **12x** on average per game, **23x** in the worst game.
+- Blowout factor (longest tick / 33 ms): **16x** on average per game, **20x** in the worst game
+  (the longest tick, 649 ms, is your slowest measured request).
 
-Rerun with your measured latencies (`--latency results/step0/jev_latency.csv`) and
-once with `--live` to get the real number for the results chapter.
+Run it once with `--live` to get the real number for the results chapter.
 
 ## Run it
 

@@ -10,7 +10,7 @@ sense) depends on this distribution.
 |---|---|
 | `framebudget/decision.py` | `DecisionState` (what a decider sees) and `Decision` (what it returns). `state_to_text` turns a state into the text we send to Jev. |
 | `framebudget/jev.py` | The Jev client. One HTTPS connection kept open between requests, a timer around each request, answers parsed into a `Decision`. Standard library only. |
-| `framebudget/fakejev.py`, `framebudget/latency.py` | An offline stand-in for Jev with lognormal latency (median 220 ms), so everything runs without a key. |
+| `framebudget/fakejev.py`, `framebudget/latency.py` | An offline stand-in for Jev with lognormal latency (fitted to your measurement: median 310 ms), so everything runs without a key. |
 | `scripts/jev_hello.py` | One request, prints the full answer. Start here. |
 | `scripts/step0_measure_latency.py` | The measurement run: warm, cold and same-state conditions. |
 | `scripts/step0_analyze.py` | Percentiles, share under each deadline, cost per hour, consistency, plots. |
@@ -47,5 +47,11 @@ python -m scripts.step0_analyze results/step0/fake/jev_latency.csv
 ## Done when
 
 `results/step0/jev_latency.csv` holds a real run, `summary.md` and the two plots
-are committed, and we have picked the deadlines. The working assumption until
-then (from the published p50 of about 220 ms) is to test 33, 100, 250 and 500 ms.
+are committed, and we have picked the deadlines.
+
+**Done (12 Oct 2026).** Warm: median 310 ms, p95 506 ms, p99 617 ms. Cold: median
+412 ms, worst 1.2 s. 646 input tokens per request. Under 250 ms: 14%; under
+500 ms: 95%; nothing under 100 ms. Chosen deadlines: **33, 250, 350, 500, 750 ms**.
+100 ms was dropped because it behaves exactly like 33 ms (no request is that fast);
+350 sits at the median and 750 above the slowest warm request. Same-state answers
+were 100% (count) and 97% (multiplier) identical.

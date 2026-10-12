@@ -32,9 +32,9 @@ COLORS = {"async": "#999999", "cache": "#2a6fdb", "prefetch": "#d1495b"}
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--games", type=int, default=30)
-    ap.add_argument("--budgets", default="33,100,250,500")
+    ap.add_argument("--budgets", default="33,250,350,500,750")
     ap.add_argument("--coarse", type=float, default=1.0)
-    ap.add_argument("--latency", default="synthetic")
+    ap.add_argument("--latency", default="measured", help="measured (Step 0 CSV), synthetic, or a CSV path")
     ap.add_argument("--out", default="results/step8")
     args = ap.parse_args()
     out = Path(args.out)

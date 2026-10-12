@@ -34,5 +34,7 @@ python -m pytest           # all tests run offline
 | `step-10` | analysis and figures | `scripts/step10_analyze.py` |
 
 Each branch builds on the previous one, so `step-10` contains everything.
-Results committed so far come from the **simulated** Jev; `docs/JEV_GUIDE.md`
-part 7 lists what to run with the real one.
+Step 0 holds the real Jev measurement (12 Oct 2026). Steps 4 to 10 on `step-10`
+use those measured latencies with a **simulated** Jev's decisions; `docs/JEV_GUIDE.md`
+part 7 lists what to run with the real one. Earlier step branches keep the results
+from when they were built (synthetic latency).

@@ -24,14 +24,15 @@ When the wave is actually cleared, the real state's signature is looked up, as
 in Step 7. If one of the predictions fell into the same bucket, it is a hit, and
 the decision is applied instantly, even with a 33 ms deadline.
 
-## Results (simulated, synthetic latency, coarseness 1, cache emptied every game)
+## Results (simulated Jev, your measured latencies, coarseness 1, cache emptied every game)
 
 | deadline | async: Jev in time | prefetch: Jev in time | requests per game: async → prefetch |
 |---|---|---|---|
-| 33 ms | 0% | 23% | 27 → 74 |
-| 100 ms | 1.5% | 24% | 27 → 74 |
-| 250 ms | 66% | 74% | 27 → 67 |
-| 500 ms | 99% | 99% | 27 → 67 |
+| 33 ms | 0% | 24% | 27 → 73 |
+| 250 ms | 14% | 33% | 27 → 72 |
+| 350 ms | 79% | 84% | 26 → 66 |
+| 500 ms | 93% | 95% | 26 → 64 |
+| 750 ms | 100% | 100% | 25 → 63 |
 
 Prefetch is the only architecture that gets Jev decisions in at a 33 ms
 deadline, but it pays for that with about 2.7 times the requests, and only about

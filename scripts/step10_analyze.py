@@ -199,7 +199,7 @@ def main() -> None:
     fig.savefig(out / "fig_tick.png", dpi=150)
     plt.close(fig)
 
-    sel = exp[(exp.arch.isin(["rules", "blocking"])) | (exp.budget_ms == 250)]
+    sel = exp[(exp.arch.isin(["rules", "blocking"])) | (exp.budget_ms == 350)]
     fig, ax = plt.subplots(figsize=(7.5, 4))
     pairs = sel[["arch", "budget_ms"]].drop_duplicates().itertuples(index=False)
     labels = [label(a, b) for a, b in sorted(pairs, key=lambda p: ORDER.index(p[0]))]
@@ -212,7 +212,7 @@ def main() -> None:
     ax.set_xticks(range(len(SKILLS)))
     ax.set_xticklabels([f"{s} bot" for s in SKILLS])
     ax.yaxis.set_major_formatter(pct)
-    ax.set(ylabel="games ending in death", title="Death rate per skill (async, cache, prefetch at 250 ms)")
+    ax.set(ylabel="games ending in death", title="Death rate per skill (async, cache, prefetch at 350 ms)")
     ax.grid(axis="x", visible=False)
     ax.legend(fontsize=8, ncol=2)
     fig.tight_layout()

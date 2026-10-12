@@ -14,21 +14,23 @@ writes everything into `results/step10/`:
 | `fig_consistency.png` | metric 3: agreement for identical input |
 | `fig_cost.png` | metric 4: USD per hour of play |
 | `fig_tick.png` | longest tick per architecture: why blocking is ruled out |
-| `fig_experience.png` | death rate per skill at the 250 ms deadline |
+| `fig_experience.png` | death rate per skill at the 350 ms deadline |
 
-**The committed results are from the simulated Jev and synthetic latency.** They
-show that the pipeline works and what shape the results have. They are not
-thesis results until the sweep has been rerun with your measured latencies and
-Jev's real answers (`docs/JEV_GUIDE.md`, part 7).
+**The committed results use your measured latencies (Step 0, 12 Oct 2026) but the
+simulated Jev's decisions.** Timing, deadlines, fallback and cost are therefore
+already realistic. Death rates and other "how the game felt" numbers depend on
+Jev's real decisions and need the record/replay sweep (`docs/JEV_GUIDE.md`, part 7).
 
 ## What the simulated run already says (to be confirmed with real data)
 
-1. **Blocking is ruled out**: the longest tick is about 740 ms, over 20 times the budget.
-2. **With async, the deadline decides who is in charge**: below the median latency
-   (~220 ms), Jev makes almost no decisions. The share follows the latency CDF from Step 0.
+1. **Blocking is ruled out**: the longest tick is about 650 ms, almost 20 times the budget.
+2. **With async, the deadline decides who is in charge**: below your median latency
+   (310 ms), Jev makes almost no decisions (14% at 250 ms, 0% at 33 ms). The share
+   follows the latency CDF from Step 0.
 3. **Cache and prefetch move that curve up at tight deadlines**: prefetch gets about
-   23% of decisions to Jev even at 33 ms, at about 2.7 times the requests.
-4. **Async is the least consistent architecture** in the middle range (250 ms):
+   24% of decisions to Jev even at 33 ms, at about 2.7 times the requests.
+4. **Async is the least consistent architecture** in the middle range (350 ms,
+   agreement 0.81 against the model's own 0.96):
    the same state gets Jev's answer or the rules' depending on network luck.
    Cache and prefetch are the most consistent, because they reuse one answer.
 5. **Cost is negligible in absolute terms**: about 3 US cents per hour of play for async and cache, about 7 for prefetch (at the measured 646 tokens per request).

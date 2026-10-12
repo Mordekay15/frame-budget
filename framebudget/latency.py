@@ -1,10 +1,10 @@
 """Latency models: "how long does Jev take to answer?"
 
-`LognormalLatency` is a synthetic stand-in, used until real measurements exist.
+`LognormalLatency` is a synthetic stand-in, used when no measurements exist.
 Network latencies are skewed to the right (most requests are fast, a few are
-very slow), and a lognormal distribution has exactly that shape. Its default
-median of 220 ms is OpenRouter's published p50 for Jev; sigma 0.35 gives a p99
-of roughly 500 ms, matching TypeSafe's "70 to 500 ms" claim.
+very slow), and a lognormal distribution has exactly that shape. Its defaults
+are fitted to the Step 0 measurement (12 Oct 2026, warm): median 310 ms, and
+sigma 0.3 reproduces the measured p95 (506 ms) and p99 (617 ms).
 """
 
 from __future__ import annotations
@@ -14,7 +14,7 @@ import random
 
 
 class LognormalLatency:
-    def __init__(self, median_ms: float = 220.0, sigma: float = 0.35, seed: int = 0):
+    def __init__(self, median_ms: float = 310.0, sigma: float = 0.30, seed: int = 0):
         self.mu = math.log(median_ms)
         self.sigma = sigma
         self.rng = random.Random(seed)
@@ -51,8 +51,21 @@ class EmpiricalLatency:
         return m
 
 
+MEASURED_CSV = "results/step0/jev_latency.csv"
+
+
+def resolve(spec: str) -> str:
+    """'measured' means the Step 0 CSV if it exists, otherwise the synthetic model."""
+    if spec == "measured":
+        from pathlib import Path
+
+        return MEASURED_CSV if Path(MEASURED_CSV).exists() else "synthetic"
+    return spec
+
+
 def latency_model(spec: str, seed: int = 0):
-    """'synthetic' or a path to a CSV with a latency_ms column."""
+    """'measured', 'synthetic' or a path to a CSV with a latency_ms column."""
+    spec = resolve(spec)
     if spec == "synthetic":
         return LognormalLatency(seed=seed)
     return EmpiricalLatency(spec, seed=seed)

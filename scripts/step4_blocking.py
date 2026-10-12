@@ -32,7 +32,7 @@ from framebudget.sim import run_episode
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--games", type=int, default=50)
-    ap.add_argument("--latency", default="synthetic", help="'synthetic' or a Step 0 CSV")
+    ap.add_argument("--latency", default="measured", help="measured (Step 0 CSV), synthetic, or a CSV path")
     ap.add_argument("--live", action="store_true", help="real Jev on the real clock")
     ap.add_argument("--out", default="results/step4")
     args = ap.parse_args()

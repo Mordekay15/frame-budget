@@ -31,13 +31,16 @@ class Setup:
 
     answers: "fake"             the offline FakeAnswers
              an answer source   e.g. StoreAnswers (replay) or StoreAnswers + LiveAnswers (record)
-    latency: "synthetic"        lognormal, median 220 ms
+    latency: "measured"         the Step 0 CSV (falls back to synthetic if missing)
+             "synthetic"        lognormal fitted to Step 0, median 310 ms
              path to a CSV      measured latencies (Step 0 file or a Step 6 recording)
     """
 
-    def __init__(self, answers="fake", latency: str = "synthetic", coarse: float = 1.0):
+    def __init__(self, answers="fake", latency: str = "measured", coarse: float = 1.0):
         self.answers = answers
-        self.latency = latency
+        from .latency import resolve
+
+        self.latency = resolve(latency)
         self.coarse = coarse
         self._csv_values = None
 

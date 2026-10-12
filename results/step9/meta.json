@@ -1,14 +1,14 @@
 {
   "reps": 30,
   "archs": "rules,blocking,async,cache,prefetch",
-  "budgets": "33,100,250,500",
+  "budgets": "33,250,350,500,750",
   "coarse": 1.0,
-  "latency": "synthetic",
+  "latency": "measured",
   "answers": "fake",
   "workers": 1,
   "out": "results/step9",
-  "games": 1260,
-  "seconds": 16.8,
-  "created": "2026-10-12T12:20:54+00:00",
-  "git_commit": "bb18a6a"
+  "games": 1530,
+  "seconds": 16.4,
+  "created": "2026-10-12T12:40:19+00:00",
+  "git_commit": "5d5f846"
 }

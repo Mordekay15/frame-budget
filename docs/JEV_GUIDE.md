@@ -156,7 +156,7 @@ the virtual environment active. Commit `results/` and `data/recordings/` after e
 | 4 | `python -m scripts.step4_blocking --live` | blocking with the real Jev, real clock | ~90 | ~5 min |
 | 5 | `python -m scripts.step5_async --live --budgets 250 --games 1` | async with real threads and real Jev | ~90 | ~5 min |
 | 6 | `python -m scripts.step6_replay --record --name jev-oct --games 5` then `python -m scripts.step6_replay --name jev-oct --games 5` | record, then prove identical replay | ~450 | ~3 min |
-| 7 | see below | the full sweep with Jev's real decisions | ~46 000 | ~30 min with 8 workers |
+| 7 | see below | the full sweep with Jev's real decisions | ~54 000 | ~35 min with 8 workers |
 | 8 | `python -m scripts.step9_consistency --live` | consistency of the real Jev | 360 | ~2 min |
 | 9 | `python -m scripts.step10_analyze` | tables and figures | 0 | seconds |
 
@@ -182,8 +182,8 @@ python -m scripts.step9_run_experiments --latency $L --answers replay:data/recor
 python -m scripts.step10_analyze
 ```
 
-At 646 input tokens per request (measured with `jev_hello`), 46 000 requests cost about $1.25. Start
-with `--reps 3` to check that everything works (about 4 600 requests). If the
+At 646 input tokens per request (measured with `jev_hello`), 54 000 requests cost about $1.50. Start
+with `--reps 3` to check that everything works (about 5 400 requests). If the
 record run is interrupted, just start it again: answers already stored are
 reused, not requested again.
 

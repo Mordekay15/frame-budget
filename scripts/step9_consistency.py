@@ -54,8 +54,8 @@ def agreement(decisions: list) -> tuple[float, int]:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--repeats", type=int, default=30)
-    ap.add_argument("--budgets", default="33,100,250,500")
-    ap.add_argument("--latency", default="synthetic")
+    ap.add_argument("--budgets", default="33,250,350,500,750")
+    ap.add_argument("--latency", default="measured", help="measured (Step 0 CSV), synthetic, or a CSV path")
     ap.add_argument("--live", action="store_true")
     ap.add_argument("--out", default="results/step9")
     args = ap.parse_args()
@@ -100,7 +100,7 @@ def main() -> None:
     s = df.groupby(["arch", "budget_ms"], dropna=False).agg(
         agreement=("agreement", "mean"), worst_state=("agreement", "min"), distinct=("distinct", "mean"),
     ).round(3)
-    src = "LIVE Jev" if args.live else "simulated Jev (FakeAnswers, noise 0.3)"
+    src = "LIVE Jev" if args.live else "simulated Jev (FakeAnswers, noise 0.1)"
     (out / "consistency.md").write_text(
         f"# Consistency ({src}, {args.repeats} repeats x {len(probe_states())} states)\n\n"
         + s.to_markdown() + "\n\nagreement: share of repeats equal to the most common decision, mean over states.\n"

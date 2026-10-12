@@ -73,10 +73,11 @@ class FakeAnswers:
     three times as bad as undershooting it, a simple form of caution. Gumbel noise of strength `noise` makes
     it choose a neighbouring difficulty now and then, so that it is neither
     perfect nor perfectly consistent, like a real model. noise=0 makes it
-    deterministic.
+    deterministic. The default 0.1 gives about 96% identical answers for a
+    repeated state, close to the real Jev in Step 0 (97 to 100%).
     """
 
-    def __init__(self, seed: int = 0, noise: float = 0.3, target_health: float = 80.0,
+    def __init__(self, seed: int = 0, noise: float = 0.1, target_health: float = 80.0,
                  overshoot: float = 3.0):
         self.rng = random.Random(seed)
         self.overshoot = overshoot

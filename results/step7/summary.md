@@ -1,15 +1,15 @@
-# Step 7: cached decisions (deadline 250 ms, latency=synthetic)
+# Step 7: cached decisions (deadline 350 ms, latency=measured)
 
 30 games per skill and coarseness; one shared cache per coarseness.
 
 |   coarse |   hit_rate |   mismatch |   deadline_met |   fallback_rate |   requests_per_game |   cache_size |   death_rate |   hit_rate_2nd_half |
 |---------:|-----------:|-----------:|---------------:|----------------:|--------------------:|-------------:|-------------:|--------------------:|
-|     0.25 |      0.109 |      0.149 |          0.698 |           0.302 |              22.578 |         2032 |        0.278 |               0.158 |
-|     0.5  |      0.428 |      0.25  |          0.814 |           0.186 |              14.689 |         1322 |        0.222 |               0.574 |
-|     1    |      0.75  |      0.418 |          0.923 |           0.077 |               6.333 |          570 |        0.233 |               0.873 |
-|     2    |      0.904 |      0.556 |          0.974 |           0.026 |               2.444 |          220 |        0.222 |               0.966 |
-|     4    |      0.961 |      0.684 |          0.989 |           0.011 |               0.956 |           86 |        0.311 |               0.99  |
-|     8    |      0.984 |      0.75  |          0.995 |           0.005 |               0.389 |           35 |        0.378 |               0.997 |
+|     0.25 |      0.114 |      0.124 |          0.809 |           0.191 |              22.278 |         2005 |        0.211 |               0.162 |
+|     0.5  |      0.411 |      0.235 |          0.868 |           0.132 |              14.056 |         1265 |        0.311 |               0.527 |
+|     1    |      0.751 |      0.43  |          0.947 |           0.053 |               6.356 |          572 |        0.233 |               0.868 |
+|     2    |      0.908 |      0.556 |          0.981 |           0.019 |               2.256 |          203 |        0.3   |               0.967 |
+|     4    |      0.961 |      0.698 |          0.991 |           0.009 |               0.956 |           86 |        0.344 |               0.995 |
+|     8    |      0.982 |      0.746 |          0.993 |           0.007 |               0.433 |           39 |        0.389 |               0.994 |
 
 hit_rate_2nd_half: hit rate once the cache has warmed up (second half of the games).
 mismatch: share of hits where a noise-free decider would choose differently for the exact state.

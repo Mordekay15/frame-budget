@@ -34,21 +34,21 @@ At a decision point, the signature is looked up:
 ## The real result: the trade-off curve
 
 `scripts/step7_cache.py` runs 30 games per skill for each `c` in 0.25 … 8, with
-one cache shared by all games (like a cache on a game server) and a 250 ms deadline.
+one cache shared by all games (like a cache on a game server) and a 350 ms deadline.
 For each hit it also checks what a noise-free decider would have chosen for the
 *exact* state. **Mismatch** is the share of hits where that differs: how much
 information the buckets threw away.
 
 | c | hit rate | mismatch | in time (Jev or cache) | requests per game |
 |---|---|---|---|---|
-| 0.25 | 11% | 15% | 70% | 23 |
-| 0.5 | 43% | 25% | 81% | 15 |
-| 1 | 75% | 42% | 92% | 6 |
-| 2 | 90% | 56% | 97% | 2.4 |
-| 4 | 96% | 68% | 99% | 1.0 |
-| 8 | 98% | 75% | 99.5% | 0.4 |
+| 0.25 | 11% | 12% | 81% | 22 |
+| 0.5 | 41% | 24% | 87% | 14 |
+| 1 | 75% | 43% | 95% | 6 |
+| 2 | 91% | 56% | 98% | 2.3 |
+| 4 | 96% | 70% | 99% | 1.0 |
+| 8 | 98% | 75% | 99% | 0.4 |
 
-(simulated Jev and synthetic latency, `results/step7/summary.md`)
+(simulated Jev, your measured latencies, deadline 350 ms; `results/step7/summary.md`)
 
 Hit rate and mismatch rise together: that is the "too coarse / too fine" problem
 from your plan, now as a curve (`hit_rate_vs_coarseness.png`). The knee is around

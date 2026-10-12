@@ -32,8 +32,8 @@ from framebudget.sim import run_episode
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--games", type=int, default=50)
-    ap.add_argument("--budgets", default="33,100,250,500")
-    ap.add_argument("--latency", default="synthetic")
+    ap.add_argument("--budgets", default="33,250,350,500,750")
+    ap.add_argument("--latency", default="measured", help="measured (Step 0 CSV), synthetic, or a CSV path")
     ap.add_argument("--real-clock", action="store_true", help="real time and worker threads")
     ap.add_argument("--live", action="store_true", help="real Jev (implies --real-clock)")
     ap.add_argument("--out", default="results/step5")

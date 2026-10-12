@@ -47,21 +47,22 @@ The tick budget (33 ms) is never touched: no tick waits for anything. The
 *deadline* is how long the game is willing to let the rules' decision stand
 before Jev's answer is no longer accepted. In this game the next wave spawns
 1 s after the decision point, so any deadline up to 1 s is possible; we test 33,
-100, 250 and 500 ms, from "Jev must answer within one tick" to "Jev may take half a second".
+250, 350, 500 and 750 ms, from "Jev must answer within one tick" to "Jev may take half a second".
 
-## Results (simulated, synthetic latency; `results/step5/summary.md`)
+## Results (simulated Jev, your measured latencies; `results/step5/summary.md`)
 
 | deadline | Jev answer used | rules fallback | longest tick |
 |---|---|---|---|
 | 33 ms | 0% | 100% | 33 ms |
-| 100 ms | 1% | 99% | 33 ms |
-| 250 ms | 66% | 34% | 33 ms |
-| 500 ms | 99.5% | 0.5% | 33 ms |
+| 250 ms | 14% | 86% | 33 ms |
+| 350 ms | 79% | 21% | 33 ms |
+| 500 ms | 94% | 6% | 33 ms |
+| 750 ms | 100% | 0% | 33 ms |
 
 The tick is back inside budget, and the share of Jev decisions simply follows
 the latency distribution: it is the Step 0 "share under X ms" number. That is
 the key observation for the thesis: **with async, the deadline decides how much
-of the game Jev controls, and below the median latency, Jev controls almost nothing.**
+of the game Jev controls, and below the median latency (310 ms for you), Jev controls almost nothing.**
 Steps 7 and 8 try to change that.
 
 `results/step5/real_clock/` is the same experiment for one game per skill on the

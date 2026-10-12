@@ -16,11 +16,11 @@
 | factor | levels |
 |---|---|
 | architecture | rules, blocking, async, cache, prefetch |
-| deadline | 33, 100, 250, 500 ms (async, cache, prefetch only; rules and blocking have none) |
+| deadline | 33, 250, 350, 500, 750 ms (async, cache, prefetch only; rules and blocking have none) |
 | bot skill | weak, medium, strong |
 | repetitions | 30 games per cell (`--reps`) |
 
-That is 3·30 (rules) + 3·30 (blocking) + 3·4·3·30 = **1 260 games**, about 15 seconds offline.
+That is 3·30 (rules) + 3·30 (blocking) + 3·5·3·30 = **1 530 games**, about 20 seconds offline.
 
 **Common random numbers.** A game's randomness *and its latency sequence*
 depend only on (skill, seed), not on the architecture. So "async vs prefetch at
