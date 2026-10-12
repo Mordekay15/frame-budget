@@ -12,11 +12,11 @@ It does not write text, which is why it is much faster than a chat model.
 Our request looks like this (see `framebudget/jev.py`):
 
 ```json
-POST https://openrouter.ai/api/alpha/decisions
-Authorization: Bearer sk-or-v1-...
+POST https://api.typesafe.ai/v1/systemone
+Authorization: Bearer <your TypeSafe key>
 
 {
-  "model": "typesafe/jev-1.13",
+  "model": "jev-1.13.0",
   "state": "Action game, difficulty tuning. Player health: 35 of 100. Wave 6 was just cleared. ...",
   "questions": {
     "enemy_count": {"type": "choice", "instructions": "How many enemies should the next wave contain?",
@@ -31,27 +31,29 @@ and the answer:
 
 ```json
 {
-  "model": "typesafe/jev-1.13-20260917",
+  "model": "jev-1.13.0",
   "answers": {
     "enemy_count": {"type": "choice", "choice": "enemies_3", "confidence": 0.71,
                     "probabilities": {"enemies_3": 0.71, "enemies_5": 0.22, "enemies_8": 0.05, "enemies_12": 0.02}},
     "damage_mult": {"type": "choice", "choice": "soft", "confidence": 0.64, "probabilities": {"...": 0.0}}
   },
-  "usage": {"input_tokens": 251, "output_tokens": 0, "cost": 0.0000105}
+  "usage": {"input_tokens": 251, "output_tokens": 0}
 }
 ```
 
 (The numbers above are illustrative; `scripts/jev_hello.py` shows you a real one.)
 
+The code also works with Jev through OpenRouter (different address, same request).
+It picks whichever key you put in `.env`; this guide assumes a TypeSafe key.
+
 ## 1. Get an API key
 
-1. Sign in at https://openrouter.ai.
-2. Jev is paid per token (about $0.04 per million input tokens, so the whole
-   thesis costs cents). Add a small amount of credit under **Settings > Credits**
-   if your account has none; $5 is far more than enough.
-3. Go to **Settings > Keys** (https://openrouter.ai/settings/keys), press
-   **Create Key**, name it `thesis`, and copy the key. It starts with `sk-or-v1-`.
-   You can only see it once, so paste it somewhere safe right away.
+1. Sign in at https://console.typesafe.ai.
+2. Open **Keys** (https://console.typesafe.ai/keys) and create a key, for example
+   named `thesis`. Copy it right away; you may not be able to see it again.
+3. Jev costs $0.042 per million input tokens (output is free), so the whole
+   thesis costs well under a dollar. If the console asks for billing or credit,
+   set that up there.
 
 ## 2. Get the code onto your laptop
 
@@ -83,7 +85,7 @@ cp .env.example .env               # Windows: copy .env.example .env
 Open `.env` in an editor and replace the placeholder with your key:
 
 ```
-OPENROUTER_API_KEY=sk-or-v1-...your key...
+TYPESAFE_API_KEY=...your key...
 ```
 
 `.env` is listed in `.gitignore`, so git will never upload it. Never paste the key
@@ -102,8 +104,9 @@ the latency of a second request. Typical problems:
 |---|---|---|
 | `No API key` | `.env` missing or misnamed | Check the file is called exactly `.env` and is in the repo root |
 | `HTTP 401` | key wrong or revoked | Create a new key, paste it again |
-| `HTTP 402` | no credit | Add credit on OpenRouter |
-| `HTTP 404` / unknown model | model name changed | Check https://openrouter.ai/typesafe and update `MODEL` in `framebudget/jev.py` |
+| `HTTP 402` / `403` | no credit or no access | Check billing in the TypeSafe console |
+| `HTTP 404` / unknown model | model name changed | Check https://docs.typesafe.ai/models and update `"model"` under `typesafe` in `PROVIDERS` in `framebudget/jev.py` |
+| `HTTP 429` | rate limit (80 requests per second) | Wait a moment; only possible with many parallel workers |
 | `unexpected answer shape` | API format changed | Send me the JSON that `jev_hello` printed |
 
 ## 5. Step 0: measure the latency
