@@ -1,13 +1,19 @@
-"""A small client for Jev (TypeSafe) through OpenRouter's Decisions API.
+"""A small client for Jev (TypeSafe).
 
 Jev is not a chat model. A request carries
   - `state`: a description of the situation (we send a short text),
   - `questions`: named, typed questions. We use two "choice" questions,
 and the response carries one typed answer per question, with probabilities.
 
-    POST https://openrouter.ai/api/alpha/decisions
-    Authorization: Bearer <OPENROUTER_API_KEY>
-    {"model": "typesafe/jev-1.13", "state": "...", "questions": {...}}
+Jev can be reached two ways; the request and answer look the same:
+
+  TypeSafe directly (default)       OpenRouter
+  POST https://api.typesafe.ai/v1/systemone      POST https://openrouter.ai/api/alpha/decisions
+  Authorization: Bearer <TYPESAFE_API_KEY>       Authorization: Bearer <OPENROUTER_API_KEY>
+  {"model": "jev-1.13.0", ...}                   {"model": "typesafe/jev-1.13", ...}
+
+Which one is used depends on which key you put in .env (TypeSafe wins if both
+are there), or on JEV_PROVIDER=typesafe|openrouter.
 
 The client keeps one HTTPS connection open between requests ("keep-alive").
 Opening a new connection costs a TCP and TLS handshake, which can add 50-150 ms,
@@ -28,9 +34,13 @@ from pathlib import Path
 
 from .decision import DAMAGE_MULTS, ENEMY_COUNTS, Decision
 
-HOST = "openrouter.ai"
-PATH = "/api/alpha/decisions"
-MODEL = "typesafe/jev-1.13"  # pinned, so results don't move if "latest" changes
+# Model ids are pinned, so results don't move when "jev-latest" points to a new release.
+PROVIDERS = {
+    "typesafe": {"host": "api.typesafe.ai", "path": "/v1/systemone",
+                 "model": "jev-1.13.0", "key_env": "TYPESAFE_API_KEY"},
+    "openrouter": {"host": "openrouter.ai", "path": "/api/alpha/decisions",
+                   "model": "typesafe/jev-1.13", "key_env": "OPENROUTER_API_KEY"},
+}
 PRICE_PER_M_INPUT_TOKENS = 0.042  # USD, output tokens are free (Oct 2026)
 
 INSTRUCTIONS_COUNT = (
@@ -73,21 +83,42 @@ QUESTIONS = {
 }
 
 
-def load_api_key(env_file: str | os.PathLike = ".env") -> str:
-    """Read OPENROUTER_API_KEY from the environment, or from a local .env file."""
-    key = os.environ.get("OPENROUTER_API_KEY", "").strip()
-    if key:
-        return key
+def _setting(name: str, env_file: str | os.PathLike = ".env") -> str:
+    """A value from the environment, or from a local .env file."""
+    value = os.environ.get(name, "").strip()
+    if value:
+        return value
     p = Path(env_file)
     if p.exists():
         for line in p.read_text().splitlines():
             line = line.strip()
-            if line.startswith("OPENROUTER_API_KEY="):
+            if line.startswith(name + "="):
                 return line.split("=", 1)[1].strip().strip('"').strip("'")
+    return ""
+
+
+def detect_provider() -> str:
+    """typesafe or openrouter: JEV_PROVIDER if set, else whichever key exists."""
+    chosen = _setting("JEV_PROVIDER").lower()
+    if chosen:
+        if chosen not in PROVIDERS:
+            raise SystemExit(f"JEV_PROVIDER must be one of {sorted(PROVIDERS)}, not {chosen!r}")
+        return chosen
+    for name, p in PROVIDERS.items():
+        if _setting(p["key_env"]):
+            return name
     raise SystemExit(
-        "No API key. Put OPENROUTER_API_KEY=sk-or-... in a .env file in the repo root "
-        "(see docs/JEV_GUIDE.md), or export it in your shell."
+        "No API key. Put TYPESAFE_API_KEY=... (or OPENROUTER_API_KEY=...) in a .env file in "
+        "the repo root (see docs/JEV_GUIDE.md), or export it in your shell."
     )
+
+
+def load_api_key() -> str:
+    provider = detect_provider()
+    key = _setting(PROVIDERS[provider]["key_env"])
+    if not key:
+        raise SystemExit(f"JEV_PROVIDER={provider}, but {PROVIDERS[provider]['key_env']} is not set.")
+    return key
 
 
 @dataclass
@@ -125,16 +156,20 @@ def parse_answers(body: dict) -> tuple[Decision, dict]:
 
 
 class JevClient:
-    def __init__(self, api_key: str, model: str = MODEL, timeout_s: float = 10.0):
+    def __init__(self, api_key: str, provider: str | None = None, model: str | None = None,
+                 timeout_s: float = 10.0):
+        self.provider = provider or detect_provider()
+        cfg = PROVIDERS[self.provider]
+        self.host, self.path = cfg["host"], cfg["path"]
         self.api_key = api_key
-        self.model = model
+        self.model = model or cfg["model"]
         self.timeout_s = timeout_s
         self._conn: http.client.HTTPSConnection | None = None
 
     def _connection(self, fresh: bool) -> http.client.HTTPSConnection:
         if fresh or self._conn is None:
             self.close()
-            self._conn = http.client.HTTPSConnection(HOST, timeout=self.timeout_s)
+            self._conn = http.client.HTTPSConnection(self.host, timeout=self.timeout_s)
         return self._conn
 
     def close(self) -> None:
@@ -154,7 +189,7 @@ class JevClient:
         t0 = time.perf_counter()
         try:
             conn = self._connection(fresh_connection)
-            conn.request("POST", PATH, body=payload, headers=headers)
+            conn.request("POST", self.path, body=payload, headers=headers)
             resp = conn.getresponse()
             raw = resp.read()
             latency = (time.perf_counter() - t0) * 1000
@@ -175,16 +210,20 @@ class JevClient:
         except (KeyError, TypeError) as exc:
             return JevResult(latency, False, resp.status, error=f"unexpected answer shape: {exc!r}")
         usage = body.get("usage", {})
+        tokens = int(usage.get("input_tokens", 0) or 0)
+        # OpenRouter reports the cost; TypeSafe reports tokens only, so compute it.
+        cost = usage.get("cost")
+        cost = float(cost) if cost is not None else tokens * PRICE_PER_M_INPUT_TOKENS / 1e6
         return JevResult(
             latency,
             True,
             resp.status,
             decision=decision,
-            input_tokens=int(usage.get("input_tokens", 0) or 0),
+            input_tokens=tokens,
             output_tokens=int(usage.get("output_tokens", 0) or 0),
-            cost=float(usage.get("cost", 0.0) or 0.0),
+            cost=cost,
             served_model=body.get("model", ""),
-            provider=body.get("provider", ""),
+            provider=body.get("provider", self.provider),
             **extra,
         )
 
@@ -193,7 +232,7 @@ class JevClient:
         conn = self._connection(fresh=True)
         conn.request(
             "POST",
-            PATH,
+            self.path,
             body=json.dumps({"model": self.model, "state": state_text, "questions": QUESTIONS}),
             headers={"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"},
         )
