@@ -1,8 +1,11 @@
 """Step 0 analysis: latency distribution, budget shares, cost and consistency.
 
     python -m scripts.step0_analyze results/step0/jev_latency.csv
+    python -m scripts.step0_analyze "results/step0/jev_latency*.csv"   # all runs pooled
 
-Writes summary.md, latency_hist.png and latency_ecdf.png next to the CSV.
+Writes summary.md, latency_hist.png and latency_ecdf.png next to the CSV(s).
+With several runs, summary.md also compares the runs, because Jev's latency
+changes over the day and the thesis should say by how much.
 """
 
 from __future__ import annotations
@@ -19,8 +22,9 @@ import numpy as np
 import pandas as pd
 
 from framebudget.jev import PRICE_PER_M_INPUT_TOKENS
+from framebudget.latency import expand
 
-BUDGETS_MS = (33, 100, 250, 500)
+BUDGETS_MS = (33, 250, 350, 500)
 COLORS = {"warm": "#2a6fdb", "cold": "#e07b39", "same": "#4c9f70"}
 
 
@@ -40,6 +44,19 @@ def latency_table(df: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def runs_table(df: pd.DataFrame) -> pd.DataFrame:
+    """Warm latency per run: is Jev equally fast at different times?"""
+    rows = []
+    for run, g in df[df.condition == "warm"].groupby("run", sort=False):
+        ok = g[g.ok == 1].latency_ms
+        rows.append({
+            "run": run, "started": str(g.started_at.min())[:16].replace("T", " ") + " UTC",
+            "n": len(g), "median_ms": f"{ok.median():.0f}", "p95_ms": f"{ok.quantile(0.95):.0f}",
+            **{f"under_{b}ms": f"{(g.ok.eq(1) & g.latency_ms.le(b)).mean():.0%}" for b in BUDGETS_MS[1:]},
+        })
+    return pd.DataFrame(rows)
+
+
 def consistency(df: pd.DataFrame) -> str:
     g = df[(df.condition == "same") & (df.ok == 1)]
     if g.empty:
@@ -56,11 +73,12 @@ def consistency(df: pd.DataFrame) -> str:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("csv")
+    ap.add_argument("csv", nargs="+", help="one or more CSVs or globs (quote globs in the shell)")
     args = ap.parse_args()
-    path = Path(args.csv)
-    df = pd.read_csv(path)
-    outdir = path.parent
+    paths = [Path(p) for spec in args.csv for p in expand(spec)]
+    df = pd.concat([pd.read_csv(p).assign(run=p.stem) for p in paths], ignore_index=True)
+    outdir = paths[0].parent
+    name = paths[0].name if len(paths) == 1 else f"{len(paths)} runs pooled"
 
     table = latency_table(df)
     ok = df[df.ok == 1]
@@ -77,7 +95,7 @@ def main() -> None:
         elif c.endswith("_ms"):
             fmt[c] = fmt[c].map(lambda v: f"{v:.0f}")
     md = [
-        f"# Step 0 results: `{path.name}`\n",
+        f"# Step 0 results: {name}\n",
         f"Served by: {', '.join(sorted(set(map(str, ok.served_model))))}  ",
         f"First request: {df.started_at.min()}  ",
         f"Last request: {df.started_at.max()}\n",
@@ -85,6 +103,12 @@ def main() -> None:
         fmt.to_markdown(index=False) if hasattr(fmt, "to_markdown") else fmt.to_string(index=False),
         "\n`under_Xms` is the share of requests that succeeded within X ms, i.e. how often a",
         "decision with that deadline would have arrived in time.\n",
+        *([] if len(paths) == 1 else [
+            "## Runs compared (warm)\n",
+            runs_table(df).to_markdown(index=False),
+            "\nThe table above pools all runs. Each run is a sample of Jev at one time of day;",
+            "pooling them gives the simulation a latency mix that is not tied to one moment.\n",
+        ]),
         "## Cost\n",
         f"Mean input tokens per request: {tokens:.0f}. Cost reported by the API for this run: ${reported:.5f}.",
         f"At one decision every 5 s, an hour of play is {per_hour:.0f} requests, about ${cost_hour:.4f}.\n",

@@ -12,7 +12,8 @@ Run on your own machine (needs TYPESAFE_API_KEY or OPENROUTER_API_KEY, see docs/
     python -m scripts.step0_measure_latency
     python -m scripts.step0_measure_latency --fake     # offline dry run, no key
 
-Then analyse with `python -m scripts.step0_analyze results/step0/jev_latency.csv`.
+Each run writes a new timestamped CSV. Analyse all runs together with
+`python -m scripts.step0_analyze "results/step0/jev_latency*.csv"`.
 """
 
 from __future__ import annotations
@@ -58,7 +59,8 @@ def main() -> None:
     ap.add_argument("--same", type=int, default=30, help="requests repeating one fixed state")
     ap.add_argument("--gap-ms", type=float, default=200, help="pause between requests")
     ap.add_argument("--seed", type=int, default=0)
-    ap.add_argument("--out", default="results/step0/jev_latency.csv")
+    ap.add_argument("--out", default=None,
+                    help="default: results/step0/jev_latency_<date>_<time>.csv, a new file per run")
     ap.add_argument("--fake", action="store_true", help="offline dry run with a fake Jev")
     args = ap.parse_args()
 
@@ -72,7 +74,8 @@ def main() -> None:
         + [("same", lambda: fixed_state, False)] * args.same
     )
 
-    out = Path(args.out)
+    stamp = dt.datetime.now().strftime("%Y%m%d_%H%M")
+    out = Path(args.out or f"results/step0/jev_latency_{stamp}.csv")
     out.parent.mkdir(parents=True, exist_ok=True)
     # One unmeasured request first, so the "warm" condition starts with an open connection.
     client.decide(fixed_state)

@@ -28,13 +28,19 @@ class EmpiricalLatency:
 
     Resampling measured values keeps the true shape of the distribution,
     including its slow tail, without assuming any formula.
+
+    `csv_path` may be a glob such as "results/step0/jev_latency*.csv": Jev's
+    latency changes over the day, so several runs at different times are pooled.
     """
 
     def __init__(self, csv_path: str, condition: str = "warm", seed: int = 0):
         import csv
 
-        with open(csv_path, newline="") as f:
-            rows = [r for r in csv.DictReader(f) if r.get("condition", condition) == condition]
+        self.paths = expand(csv_path)
+        rows = []
+        for path in self.paths:
+            with open(path, newline="") as f:
+                rows += [r for r in csv.DictReader(f) if r.get("condition", condition) == condition]
         # A failed request is treated as never arriving.
         self.values = [float(r["latency_ms"]) if r.get("ok", "1") == "1" else math.inf for r in rows]
         if not self.values:
@@ -51,15 +57,21 @@ class EmpiricalLatency:
         return m
 
 
-MEASURED_CSV = "results/step0/jev_latency.csv"
+# Every Step 0 run: jev_latency.csv (the first one) and jev_latency_<time>.csv.
+MEASURED_CSV = "results/step0/jev_latency*.csv"
+
+
+def expand(pattern: str) -> list[str]:
+    """The files a path or glob names, sorted, so the pooled order is stable."""
+    import glob
+
+    return sorted(glob.glob(pattern)) if glob.has_magic(pattern) else [pattern]
 
 
 def resolve(spec: str) -> str:
-    """'measured' means the Step 0 CSV if it exists, otherwise the synthetic model."""
+    """'measured' means all Step 0 runs if any exist, otherwise the synthetic model."""
     if spec == "measured":
-        from pathlib import Path
-
-        return MEASURED_CSV if Path(MEASURED_CSV).exists() else "synthetic"
+        return MEASURED_CSV if expand(MEASURED_CSV) else "synthetic"
     return spec
 
 

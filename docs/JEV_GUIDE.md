@@ -116,8 +116,15 @@ python -m scripts.step0_measure_latency
 ```
 
 This sends 431 requests (300 warm, 100 cold, 30 same-state, one warm-up) with a
-200 ms pause between them and takes about 3 minutes. It writes
-`results/step0/jev_latency.csv` row by row, so an interruption loses nothing.
+200 ms pause between them and takes about 3 minutes. It writes a new file
+`results/step0/jev_latency_<date>_<time>.csv` row by row, so an interruption
+loses nothing and a second run never overwrites the first.
+
+**Run it several times, at different times of day** (for example morning,
+afternoon and evening, ideally on two different days). Jev's latency is not
+constant: on 12 Oct the median was 310 ms at 12:24 but 238 ms half an hour
+later. Every later step pools all runs it finds in `results/step0/`, so the
+simulation uses a mix of good and bad moments instead of one random snapshot.
 
 Close other downloads and video calls while it runs; they add latency. Write
 down where you ran it (home Wi-Fi, university network, ...), since that belongs
@@ -126,10 +133,11 @@ in the methodology chapter.
 Then:
 
 ```bash
-python -m scripts.step0_analyze results/step0/jev_latency.csv
+python -m scripts.step0_analyze "results/step0/jev_latency*.csv"
 ```
 
-This prints a table and writes `summary.md`, `latency_hist.png` and
+The quotes matter: they let the script find all runs itself. It prints the
+pooled table, a per-run comparison, and writes `summary.md`, `latency_hist.png` and
 `latency_ecdf.png` into `results/step0/`.
 
 ## 6. Save the results to GitHub
@@ -151,7 +159,7 @@ the virtual environment active. Commit `results/` and `data/recordings/` after e
 | # | command | what it does | requests | time |
 |---|---|---|---|---|
 | 1 | `python -m scripts.jev_hello` | first call, checks key and format | 2 | seconds |
-| 2 | `python -m scripts.step0_measure_latency` then `python -m scripts.step0_analyze results/step0/jev_latency.csv` | the latency distribution | 431 | ~3 min |
+| 2 | `python -m scripts.step0_measure_latency` (3 or more times, spread over the day) then `python -m scripts.step0_analyze "results/step0/jev_latency*.csv"` | the latency distribution | 431 per run | ~3 min per run |
 | 3 | `python -m scripts.step1_bare_loop` | loop timing on your machine (no Jev) | 0 | ~6 min |
 | 4 | `python -m scripts.step4_blocking --live` | blocking with the real Jev, real clock | ~90 | ~5 min |
 | 5 | `python -m scripts.step5_async --live --budgets 250 --games 1` | async with real threads and real Jev | ~90 | ~5 min |
@@ -167,18 +175,18 @@ reproducible dataset:
 macOS / Linux (bash):
 
 ```bash
-L=results/step0/jev_latency.csv
-python -m scripts.step9_run_experiments --latency $L --answers record:data/recordings/sweep/answers.json --workers 8
-python -m scripts.step9_run_experiments --latency $L --answers replay:data/recordings/sweep/answers.json
+L="results/step0/jev_latency*.csv"   # all Step 0 runs, pooled
+python -m scripts.step9_run_experiments --latency "$L" --answers record:data/recordings/sweep/answers.json --workers 8
+python -m scripts.step9_run_experiments --latency "$L" --answers replay:data/recordings/sweep/answers.json
 python -m scripts.step10_analyze
 ```
 
 Windows (PowerShell):
 
 ```powershell
-$L = "results/step0/jev_latency.csv"
-python -m scripts.step9_run_experiments --latency $L --answers record:data/recordings/sweep/answers.json --workers 8
-python -m scripts.step9_run_experiments --latency $L --answers replay:data/recordings/sweep/answers.json
+$L = "results/step0/jev_latency*.csv"   # all Step 0 runs, pooled
+python -m scripts.step9_run_experiments --latency "$L" --answers record:data/recordings/sweep/answers.json --workers 8
+python -m scripts.step9_run_experiments --latency "$L" --answers replay:data/recordings/sweep/answers.json
 python -m scripts.step10_analyze
 ```
 

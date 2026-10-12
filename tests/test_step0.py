@@ -85,3 +85,14 @@ def test_provider_follows_the_key(monkeypatch, tmp_path):
     assert jev.detect_provider() == "openrouter" and jev.load_api_key() == "or"
     (tmp_path / ".env").write_text("TYPESAFE_API_KEY=ts\n")
     assert jev.detect_provider() == "typesafe" and jev.load_api_key() == "ts"
+
+
+def test_empirical_latency_pools_runs_from_a_glob(tmp_path):
+    from framebudget.latency import EmpiricalLatency
+
+    header = "condition,latency_ms,ok\n"
+    (tmp_path / "jev_latency.csv").write_text(header + "warm,300,1\nwarm,320,1\ncold,900,1\n")
+    (tmp_path / "jev_latency_20261012_1800.csv").write_text(header + "warm,240,1\nwarm,250,0\n")
+    m = EmpiricalLatency(str(tmp_path / "jev_latency*.csv"))
+    assert len(m.paths) == 2
+    assert sorted(m.values) == [240.0, 300.0, 320.0, float("inf")]
