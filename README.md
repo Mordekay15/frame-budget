@@ -12,6 +12,8 @@ hard they hit.
   player describes spells in their own words and Jev reads them (element, target, power), with the same
   architectures, a simulator and a new Step 0. It replaces difficulty adjustment as the decision under
   study, after the meeting with Joonas.
+- **Old results removed (23 Oct 2026):** the wave game's results and recordings were removed from this
+  branch to start clean with the spell game. They are still on the `step-0` to `step-10` branches.
 - **Start here:** [docs/JEV_GUIDE.md](docs/JEV_GUIDE.md), from API key to first measurement.
 - **Each step** has its own branch (`step-0`, `step-1`, ...) and an explanation in `docs/steps/`.
 
