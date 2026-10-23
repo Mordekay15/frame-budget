@@ -10,7 +10,7 @@ Jev answers three typed questions about the text in one request: the **element**
 the **power** (vivid, original spells deserve more). A keyword parser is the fallback, and it can't
 read that sentence at all: it finds no frost word. That gap is the reason to use a decision model here.
 
-The architectures are the same as in the Python bench: rules only, blocking, async with rules fallback,
+The architectures are the same as in the first (removed) wave-game bench: rules only, blocking, async with rules fallback,
 cache, and prefetch. Prefetch gets a natural form here: **it asks Jev while the player is still
 typing**, whenever they pause, so the answer is often back before Enter is pressed.
 

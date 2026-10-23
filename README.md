@@ -1,46 +1,11 @@
 # frame-budget
 
-Technical part of a bachelor thesis: can a decision model (Jev, by TypeSafe) make
-decisions inside a game's real-time loop, and which architecture makes that
-possible within a fixed time budget?
+Technical part of a bachelor thesis: can a decision model (Jev, by TypeSafe) make decisions inside a
+game's real-time loop, and which architecture makes that possible within a fixed time budget?
 
-The game is a minimal wave shooter with no graphics and a simulated player. The
-decision under study is difficulty: how many enemies the next wave has and how
-hard they hit.
+Everything is in **[text-game/](text-game/README.md)**: a web game where the player describes spells in
+their own words and Jev reads them (element, target, power), a simulator that plays it with a bot to
+compare the architectures, and the code that measures Jev.
 
-- **New (23 Oct 2026): [text-game/](text-game/README.md)**, the second test bench. A web game where the
-  player describes spells in their own words and Jev reads them (element, target, power), with the same
-  architectures, a simulator and a new Step 0. It replaces difficulty adjustment as the decision under
-  study, after the meeting with Joonas.
-- **Old results removed (23 Oct 2026):** the wave game's results and recordings were removed from this
-  branch to start clean with the spell game. They are still on the `step-0` to `step-10` branches.
-- **Start here:** [docs/JEV_GUIDE.md](docs/JEV_GUIDE.md), from API key to first measurement.
-- **Each step** has its own branch (`step-0`, `step-1`, ...) and an explanation in `docs/steps/`.
-
-```bash
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-python -m pytest           # all tests run offline
-```
-
-## The steps
-
-| branch | step | main script |
-|---|---|---|
-| `step-0` | measure Jev's latency in isolation | `scripts/step0_measure_latency.py` |
-| `step-1` | fixed-timestep loop, real and simulated clock | `scripts/step1_bare_loop.py` |
-| `step-2` | the game and the simulated player | `scripts/step2_fixed_difficulty.py` |
-| `step-3` | Hunicke's comfort-zone baseline | `scripts/step3_rules_baseline.py` |
-| `step-4` | decider interface, blocking architecture | `scripts/step4_blocking.py` |
-| `step-5` | async with rules fallback | `scripts/step5_async.py` |
-| `step-6` | latency recording and replay | `scripts/step6_replay.py` |
-| `step-7` | cached decisions | `scripts/step7_cache.py` |
-| `step-8` | predictive prefetch | `scripts/step8_prefetch.py` |
-| `step-9` | experiment runner, consistency run | `scripts/step9_run_experiments.py` |
-| `step-10` | analysis and figures | `scripts/step10_analyze.py` |
-
-Each branch builds on the previous one, so `step-10` contains everything.
-Step 0 holds the real Jev measurement (12 Oct 2026). Steps 4 to 10 on `step-10`
-use those measured latencies with a **simulated** Jev's decisions; `docs/JEV_GUIDE.md`
-part 7 lists what to run with the real one. Earlier step branches keep the results
-from when they were built (synthetic latency).
+The first test bench (a wave game whose decision was difficulty adjustment, in Python) was removed from
+this branch on 23 Oct 2026. It is still on the `step-0` to `step-10` branches.

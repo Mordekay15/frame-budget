@@ -1,4 +1,4 @@
-// A small Node client for Jev (TypeSafe), the same API as framebudget/jev.py:
+// A small Node client for Jev (TypeSafe):
 //
 //   TypeSafe directly (default)                  OpenRouter
 //   POST https://api.typesafe.ai/v1/systemone    POST https://openrouter.ai/api/alpha/decisions
@@ -28,7 +28,7 @@ function setting(name) {
   if (process.env[name]?.trim()) return process.env[name].trim();
   if (dotenv === null) {
     dotenv = {};
-    // text-game/.env first, then the repo root's .env (where the Python steps keep the key)
+    // text-game/.env first, then the repo root's .env (where the key was kept for the first bench)
     for (const p of [path.resolve(".env"), path.resolve("..", ".env")]) {
       if (!fs.existsSync(p)) continue;
       for (const line of fs.readFileSync(p, "utf8").split(/\r?\n/)) {
