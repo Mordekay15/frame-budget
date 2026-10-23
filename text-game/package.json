@@ -1,0 +1,15 @@
+{
+  "name": "frame-budget-text-game",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Spell-crafting text game for the frame-budget thesis: the player describes a spell, a decision model turns it into a typed effect.",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "dev": "node dev-server.mjs",
+    "test": "node --test test/*.test.mjs",
+    "sim": "node sim/run.mjs",
+    "sweep": "node sim/run.mjs --sweep",
+    "measure": "node sim/measure.mjs"
+  }
+}

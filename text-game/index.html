@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nuppu's Spell Valley</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Nuppu's Spell Valley</h1>
+    <p>Gloomlings are drifting towards the cottage. Describe a spell in your own words, and the valley's magic decides what it does.</p>
+  </header>
+
+  <section class="settings" aria-label="Experiment settings">
+    <label>Architecture
+      <select id="arch">
+        <option value="async" data-help="Asks Jev in the background. If the answer is not back by the deadline, the keyword rules decide." selected>async + fallback</option>
+        <option value="cache" data-help="Like async, but a spell you have cast before is answered from memory, instantly.">cache</option>
+        <option value="prefetch" data-help="Like cache, but asks Jev while you are still typing, whenever you pause.">prefetch</option>
+        <option value="blocking" data-help="Waits for Jev inside the frame. The whole game freezes until it answers. Built to show why not.">blocking</option>
+        <option value="rules" data-help="No model at all: a keyword parser decides every spell instantly.">rules only</option>
+      </select>
+    </label>
+    <label>Deadline
+      <select id="deadline">
+        <option value="33">33 ms (one frame)</option>
+        <option value="250">250 ms</option>
+        <option value="350" selected>350 ms</option>
+        <option value="500">500 ms</option>
+        <option value="750">750 ms</option>
+      </select>
+    </label>
+    <label>Model
+      <select id="source">
+        <option value="server" selected>Jev (via server)</option>
+        <option value="offline">offline demo</option>
+      </select>
+    </label>
+    <p id="arch-help" class="muted"></p>
+    <p id="server-note" class="muted"></p>
+  </section>
+
+  <main>
+    <div class="stage">
+      <canvas id="game" width="960" height="540" aria-label="The valley"></canvas>
+      <div id="overlay" class="overlay">
+        <div class="card">
+          <h2 id="overlay-title">Help Nuppu guard the valley</h2>
+          <p id="overlay-text">Type a spell and press Enter. Be vivid: imaginative spells are stronger.
+            Watch which gloomling is closest, and use what it fears.</p>
+          <button id="start-btn">Start</button>
+        </div>
+      </div>
+    </div>
+    <div class="cast">
+      <input id="spell" type="text" maxlength="280" autocomplete="off" disabled
+             placeholder="e.g. a snowstorm that tickles their toes until they freeze">
+      <button id="cast-btn">Cast</button>
+    </div>
+
+    <div class="panels">
+      <section><h3>Last spell</h3><div id="last"><p class="muted">Your spells will appear here.</p></div></section>
+      <section><h3>Field guide</h3><ul id="guide"></ul></section>
+      <section><h3>This game</h3><table id="stats"></table></section>
+    </div>
+  </main>
+
+  <footer class="muted">A test bench for a bachelor thesis on decision models in a game's real-time loop.
+    Spells are judged by Jev (TypeSafe), a decision model.</footer>
+  <script type="module" src="src/browser/main.js"></script>
+</body>
+</html>

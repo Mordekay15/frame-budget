@@ -8,6 +8,10 @@ The game is a minimal wave shooter with no graphics and a simulated player. The
 decision under study is difficulty: how many enemies the next wave has and how
 hard they hit.
 
+- **New (23 Oct 2026): [text-game/](text-game/README.md)**, the second test bench. A web game where the
+  player describes spells in their own words and Jev reads them (element, target, power), with the same
+  architectures, a simulator and a new Step 0. It replaces difficulty adjustment as the decision under
+  study, after the meeting with Joonas.
 - **Start here:** [docs/JEV_GUIDE.md](docs/JEV_GUIDE.md), from API key to first measurement.
 - **Each step** has its own branch (`step-0`, `step-1`, ...) and an explanation in `docs/steps/`.
 

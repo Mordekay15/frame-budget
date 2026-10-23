@@ -1,0 +1,7 @@
+# only the game, its API route and the code they import are deployed
+sim/
+test/
+results/
+data/
+dev-server.mjs
+.env
