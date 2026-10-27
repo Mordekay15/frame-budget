@@ -23,7 +23,7 @@ import { rulesDecide, words } from "../src/engine/rules.js";
 import { rng } from "../src/engine/rng.js";
 import { expand, loadCorpus, readCsv, writeCsv } from "./deciders.mjs";
 
-export const DEADLINES = [33, 100, 250, 350, 500, 750];
+export const DEADLINES = [33, 100, 167, 200, 233, 333, 500];
 export const SAME_SPELLS = [
   "Freeze the nearest gloomling solid",                                   // clear, keywords
   "Make it remember the longest January night, when even the stars shivered", // poetic, no frost keyword
@@ -154,11 +154,11 @@ export function analyze(pattern) {
   const tok = ok.map((r) => +r.input_tokens), cost = ok.map((r) => +r.cost);
   out.push("", "## Cost", "", `Median ${f0(q(tok, 0.5))} input tokens per request; mean cost $${(cost.reduce((a, b) => a + b, 0) / (cost.length || 1)).toExponential(2)} per request.`);
 
-  out.push("", "## Runs", "", "| file | first request | warm median | warm ≤ 350 ms |", "|---|---|---|---|");
+  out.push("", "## Runs", "", "| file | first request | warm median | warm ≤ 200 ms |", "|---|---|---|---|");
   for (const f of files.map((x) => path.basename(x))) {
     const rs = rows.filter((r) => r.file === f && r.condition === "warm");
     const lat = rs.filter((r) => r.ok === "1").map((r) => +r.latency_ms);
-    out.push(`| ${f} | ${rows.find((r) => r.file === f)?.started_at ?? ""} | ${f0(q(lat, 0.5))} ms | ${pc(lat.filter((x) => x <= 350).length, rs.length)} |`);
+    out.push(`| ${f} | ${rows.find((r) => r.file === f)?.started_at ?? ""} | ${f0(q(lat, 0.5))} ms | ${pc(lat.filter((x) => x <= 200).length, rs.length)} |`);
   }
   return out.join("\n") + "\n";
 }

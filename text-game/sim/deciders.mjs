@@ -17,9 +17,10 @@ import { JevClient, PRICE_PER_M_INPUT_TOKENS, TIMEOUT_MS } from "../lib/jev.mjs"
 
 // ---------------------------------------------------------------- latency models
 
-/** Synthetic: lognormal, fitted to the Step 0 measurement of 12 Oct (median 310 ms, p95 506 ms). */
+/** Synthetic: lognormal, fitted to the spell-game Step 0 runs of 23 to 27 Oct (warm median 195 ms, p95 255 ms).
+ *  Only used when no Step 0 CSVs are present; otherwise the measured latencies are resampled. */
 export class LognormalLatency {
-  constructor({ medianMs = 310, sigma = 0.3, seed = 0 } = {}) {
+  constructor({ medianMs = 195, sigma = 0.16, seed = 0 } = {}) {
     this.r = rng(seed + 101);
     Object.assign(this, { medianMs, sigma });
   }

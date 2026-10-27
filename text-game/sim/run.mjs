@@ -1,6 +1,6 @@
 // The experiment runner.
 //
-//   node sim/run.mjs                                   one game, async at 350 ms, fake Jev
+//   node sim/run.mjs                                   one game, async at 200 ms, fake Jev
 //   node sim/run.mjs --arch prefetch --deadline 250 --skill strong --games 10
 //   node sim/run.mjs --sweep                           every architecture x deadline x skill, 30 games each
 //   node sim/run.mjs --sweep --decider live --record data/recordings/live-1   real Jev, recorded
@@ -26,10 +26,13 @@ import { FakeDecider, LiveDecider, ReplayDecider, latencyModel, loadCorpus, writ
 import { SKILLS } from "./bot.mjs";
 import { summaryMarkdown } from "./summary.mjs";
 
-export const DEADLINES = [33, 250, 350, 500, 750];
+// In frames of the 33 ms tick: 1, 5, 6, 7 and 10. Picked from the Step 0 runs of 23 to 27 Oct
+// (warm median 195 ms): from 0% of answers in time at one frame up to ~99% at ten frames,
+// with the steps where the latency distribution changes fastest.
+export const DEADLINES = [33, 167, 200, 233, 333];
 
 function parseArgs(argv) {
-  const o = { arch: "async", deadline: 350, skill: "average", games: 1, reps: 30, seed: 1, coarse: 1,
+  const o = { arch: "async", deadline: 200, skill: "average", games: 1, reps: 30, seed: 1, coarse: 1,
               decider: "fake", latency: "measured", sweep: false, sharedCache: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i], next = () => argv[++i];

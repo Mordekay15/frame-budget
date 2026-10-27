@@ -99,3 +99,14 @@ test("one spell at a time", () => {
   assert.equal(layer.onSubmit("fire", 0), true);
   assert.equal(layer.onSubmit("ice", 10), false);
 });
+
+test("a deadline of 167 ms is 5 ticks: an answer at 160 ms is in time, one at 170 ms is not", () => {
+  for (const [lat, source] of [[160, "jev"], [170, "rules"]]) {
+    const casts = [];
+    const layer = new DecisionLayer({ mode: "async", channel: fixedChannel(lat), deadlineMs: 167, onCast: (d, ev) => casts.push(ev) });
+    layer.onSubmit("a warm glow", 0);
+    drive(layer, 0, 400);
+    assert.equal(casts[0].source, source);
+    assert.ok(Math.abs(casts[0].waitMs - 5 * TICK_MS) < 1e-6, `waited ${casts[0].waitMs}`);
+  }
+});
