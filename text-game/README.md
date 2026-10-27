@@ -27,11 +27,13 @@ text-game/
   api/decide.js             Vercel function: holds the API key and calls Jev
   lib/jev.mjs               the Jev client (Node standard library only)
   sim/                      the simulator, the bot, the Step 0 measurement
+  analysis/results.py       tables and figures for the thesis (Python, pandas + matplotlib)
   data/spells.json          80 labelled spells the bot casts (a draft: please review the labels)
   test/                     node --test, all offline
 ```
 
-Nothing to install: everything uses Node's standard library (Node 20 or newer).
+Nothing to install: everything uses Node's standard library (Node 20 or newer). Only the
+thesis tables and figures use Python.
 
 ## Play it locally
 
@@ -90,6 +92,15 @@ thesis data. The simulated clock makes every run repeatable: the same seeds give
 
 The bot types its spells one character at a time, with pauses between some words, and reuses spells
 that worked, so prefetch and the cache are tested the way a player would use them.
+
+## Tables and figures
+
+```bash
+pip install pandas matplotlib
+python analysis/results.py          # newest results/sim/live-* sweep, plus results/step0
+```
+
+Writes `results/thesis/`: `tables.md`, `tables.tex` (booktabs) and six figures as PDF and PNG.
 
 ## Tests
 
