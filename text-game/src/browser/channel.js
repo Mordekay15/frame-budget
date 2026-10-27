@@ -52,7 +52,7 @@ export class FetchChannel {
 
 /**
  * No server, no key: the keyword rules answer, after a delay drawn from the
- * measured Jev latency (lognormal, median 310 ms). Good for trying the game and
+ * measured Jev latency (lognormal fitted to Step 0: median 195 ms, p95 about 255 ms). Good for trying the game and
  * the architectures; it is not Jev, so its "understanding" is only the rules'.
  */
 export class OfflineChannel {
@@ -62,7 +62,7 @@ export class OfflineChannel {
   }
 
   _answer(text) {
-    return { ok: true, decision: rulesDecide(text), inputTokens: 0, cost: 0, latencyMs: this.r.lognormal(310, 0.3) };
+    return { ok: true, decision: rulesDecide(text), inputTokens: 0, cost: 0, latencyMs: this.r.lognormal(195, 0.16) };
   }
 
   submit(id, text, now, tag) {

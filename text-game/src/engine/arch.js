@@ -23,7 +23,7 @@ import { signature } from "./signature.js";
 export const MODES = ["rules", "blocking", "async", "cache", "prefetch"];
 
 export class DecisionLayer {
-  constructor({ mode, channel, deadlineMs = 350, coarse = 1, cache = new Map(), debounceMs = 250, onCast = () => {} }) {
+  constructor({ mode, channel, deadlineMs = 200, coarse = 1, cache = new Map(), debounceMs = 250, onCast = () => {} }) {
     if (!MODES.includes(mode)) throw new Error(`unknown mode ${mode}`);
     this.mode = mode;
     this.channel = channel;
@@ -110,8 +110,9 @@ export class DecisionLayer {
       this.lastPrefetchKey = key;
     }
 
+    // 1 ms of tolerance, so a deadline written as 167 ms means 5 ticks of 33.3 ms, not 6
     const ev = this.pending;
-    if (ev && now - ev.submittedAt >= this.deadlineMs) this._resolve(ev.rules, "rules", now);
+    if (ev && now - ev.submittedAt >= this.deadlineMs - 1) this._resolve(ev.rules, "rules", now);
   }
 
   _send(ev, text, now) {

@@ -76,7 +76,7 @@ corpus labels against the keyword rules, and what Jev does with spells that try 
 ## Simulate
 
 ```bash
-npm run sim                                      # one game, async at 350 ms, fake Jev
+npm run sim                                      # one game, async at 200 ms, fake Jev
 node sim/run.mjs --arch prefetch --deadline 250 --skill strong --games 10
 npm run sweep                                    # 3 skills x (rules, blocking, 3 archs x 5 deadlines) x 30 games
 node sim/run.mjs --sweep --decider live --record data/recordings/live-1     # real Jev, recorded
