@@ -1,0 +1,10 @@
+{
+  "decider": "live",
+  "latency": "live",
+  "seed": 1,
+  "coarse": 1,
+  "sharedCache": false,
+  "games": 255,
+  "created": "2026-10-27T08:03:37.856Z",
+  "recording": "data/recordings/live-1"
+}
