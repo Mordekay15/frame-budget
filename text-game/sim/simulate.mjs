@@ -46,12 +46,12 @@ const quantile = (xs, q) => {
   return s[Math.min(s.length - 1, Math.floor(q * s.length))];
 };
 
-export async function simulateGame({ mode, deadlineMs, skill, seed, decider, corpus, coarse = 1, cache = new Map() }) {
+export async function simulateGame({ mode, deadlineMs, skill, seed, decider, corpus, cache = new Map() }) {
   const game = new Game({ seed });
   const bot = new Bot(skill, seed * 7919 + 13, corpus);
   const channel = new SimChannel(decider);
   const layer = new DecisionLayer({
-    mode, channel, deadlineMs, coarse, cache,
+    mode, channel, deadlineMs, cache,
     onCast: (d, ev) => {
       const res = game.cast(d);
       bot.feedback(ev.text, res);
@@ -103,7 +103,7 @@ export async function simulateGame({ mode, deadlineMs, skill, seed, decider, cor
   return {
     summary: {
       arch: mode, deadline_ms: mode === "rules" || mode === "blocking" ? "" : deadlineMs, skill, seed,
-      decider: decider.name, coarse: mode === "cache" || mode === "prefetch" ? coarse : "",
+      decider: decider.name,
       spells: evs.length,
       model_share: share((e) => e.source !== "rules"),
       from_jev: share((e) => e.source === "jev"),

@@ -23,12 +23,11 @@ import { signature } from "./signature.js";
 export const MODES = ["rules", "blocking", "async", "cache", "prefetch"];
 
 export class DecisionLayer {
-  constructor({ mode, channel, deadlineMs = 200, coarse = 1, cache = new Map(), debounceMs = 250, onCast = () => {} }) {
+  constructor({ mode, channel, deadlineMs = 200, cache = new Map(), debounceMs = 250, onCast = () => {} }) {
     if (!MODES.includes(mode)) throw new Error(`unknown mode ${mode}`);
     this.mode = mode;
     this.channel = channel;
     this.deadlineMs = deadlineMs;
-    this.coarse = coarse;
     this.cache = cache;
     this.debounceMs = debounceMs;
     this.onCast = onCast;
@@ -80,7 +79,7 @@ export class DecisionLayer {
     }
 
     if (this.mode === "cache" || this.mode === "prefetch") {
-      const key = (ev.key = signature(text, this.coarse));
+      const key = (ev.key = signature(text));
       if (this.cache.has(key)) {
         const fromPrefetch = this.mode === "prefetch" && this.prefetched.has(key);
         // A prefetched answer counts as a prefetch the first time; reusing it later is a cache hit.
@@ -100,7 +99,7 @@ export class DecisionLayer {
     for (const arr of this.channel.poll(now)) this._arrival(arr, now);
 
     if (this.mode === "prefetch" && this.typed.trim() && now - this.lastKeyAt >= this.debounceMs) {
-      const key = signature(this.typed, this.coarse);
+      const key = signature(this.typed);
       if (key !== this.lastPrefetchKey && !this.cache.has(key) && !this.inflight.has(key)) {
         const id = ++this.nextReq;
         this.inflight.set(key, id);

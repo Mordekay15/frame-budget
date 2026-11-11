@@ -22,7 +22,7 @@ text-game/
     rules.js                the keyword fallback
     arch.js                 the five architectures
     game.js                 gloomlings, waves, damage (no drawing, no timing)
-    signature.js            cache keys, with the coarseness knob
+    signature.js            cache keys (case, punctuation and spaces ignored)
   src/browser/              drawing, input, and the channel to /api/decide
   api/decide.js             Vercel function: holds the API key and calls Jev
   lib/jev.mjs               the Jev client (Node standard library only)

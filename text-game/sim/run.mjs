@@ -8,7 +8,7 @@
 //
 // Options:
 //   --arch rules|blocking|async|cache|prefetch   --deadline ms     --skill weak|average|strong
-//   --games N (or --reps N with --sweep)         --seed S          --coarse 0|1|2 (cache key)
+//   --games N (or --reps N with --sweep)         --seed S
 //   --latency measured|synthetic|<csv glob>      (fake decider only; default: measured if Step 0 ran)
 //   --shared-cache    one cache for all games in a cell, like one game server
 //   --out DIR         default results/sim/<decider>-<time>
@@ -32,7 +32,7 @@ import { summaryMarkdown } from "./summary.mjs";
 export const DEADLINES = [33, 167, 200, 233, 333];
 
 function parseArgs(argv) {
-  const o = { arch: "async", deadline: 200, skill: "average", games: 1, reps: 30, seed: 1, coarse: 1,
+  const o = { arch: "async", deadline: 200, skill: "average", games: 1, reps: 30, seed: 1,
               decider: "fake", latency: "measured", sweep: false, sharedCache: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i], next = () => argv[++i];
@@ -44,7 +44,6 @@ function parseArgs(argv) {
     else if (a === "--games") o.games = +next();
     else if (a === "--reps") o.reps = +next();
     else if (a === "--seed") o.seed = +next();
-    else if (a === "--coarse") o.coarse = +next();
     else if (a === "--decider") o.decider = next();
     else if (a === "--latency") o.latency = next();
     else if (a === "--record") o.record = next();
@@ -93,7 +92,7 @@ export async function run(o) {
       decider.reset?.();
       const { summary, events } = await simulateGame({
         mode: c.mode, deadlineMs: c.deadlineMs ?? 0, skill: c.skill, seed: o.seed * 100003 + g,
-        decider, corpus, coarse: o.coarse, cache: o.sharedCache ? cache : new Map(),
+        decider, corpus, cache: o.sharedCache ? cache : new Map(),
       });
       games.push({ game: g, ...summary });
       spells.push(...events.map((e) => ({ game: g, ...e })));
@@ -107,7 +106,7 @@ export async function run(o) {
   writeCsv(path.join(out, "games.csv"), games);
   writeCsv(path.join(out, "spells.csv"), spells);
   const meta = { decider: o.decider, latency: decider.latency?.describe?.() ?? o.decider, seed: o.seed,
-                 coarse: o.coarse, sharedCache: o.sharedCache, games: games.length, created: new Date().toISOString(),
+                 sharedCache: o.sharedCache, games: games.length, created: new Date().toISOString(),
                  recording: o.decider === "live" ? decider.recordDir : o.replay ?? null };
   fs.writeFileSync(path.join(out, "meta.json"), JSON.stringify(meta, null, 2));
   fs.writeFileSync(path.join(out, "summary.md"), summaryMarkdown(games, meta));

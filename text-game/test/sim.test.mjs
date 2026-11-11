@@ -54,7 +54,7 @@ test("a replay of a recording reproduces the run", async () => {
 
 test("the runner writes its files", async () => {
   const out = tmp();
-  const { games } = await run({ arch: "cache", deadline: 250, skill: "weak", games: 2, seed: 1, coarse: 1, decider: "fake",
+  const { games } = await run({ arch: "cache", deadline: 250, skill: "weak", games: 2, seed: 1, decider: "fake",
                                 latency: "synthetic", sweep: false, quiet: true, out });
   assert.equal(games.length, 2);
   for (const f of ["games.csv", "spells.csv", "summary.md", "meta.json"]) assert.ok(fs.existsSync(path.join(out, f)), f);
