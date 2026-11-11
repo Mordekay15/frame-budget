@@ -13,10 +13,9 @@ test("rules read keywords, and miss poetry", () => {
   assert.equal(rulesDecide("asdf").power, "weak");
 });
 
-test("signatures get coarser", () => {
-  assert.notEqual(signature("Fire, a big ball!", 0), signature("fire a big ball", 0));
-  assert.equal(signature("Fire, a big ball!", 1), signature("fire a big  ball", 1));
-  assert.equal(signature("a big ball of fire", 2), signature("Fire, big ball!", 2));
+test("signatures ignore case, punctuation and spaces, not wording", () => {
+  assert.equal(signature("Fire, a big ball!"), signature("fire a big  ball"));
+  assert.notEqual(signature("a big ball of fire"), signature("Fire, big ball!"));
 });
 
 test("questions cover every allowed answer, and parsing rejects others", () => {

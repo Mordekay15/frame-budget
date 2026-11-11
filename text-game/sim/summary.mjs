@@ -27,7 +27,7 @@ export function summaryMarkdown(games, meta) {
   const lines = [
     "# Simulation summary",
     "",
-    `Decider: **${meta.decider}** (${meta.latency}). ${meta.games} games. Seed ${meta.seed}, cache key coarseness ${meta.coarse}` +
+    `Decider: **${meta.decider}** (${meta.latency}). ${meta.games} games. Seed ${meta.seed}` +
       `${meta.sharedCache ? ", one shared cache per cell" : ""}.`,
     meta.decider === "fake" ? "\n> Fake Jev: real-shaped latencies, made-up answers. For checking the pipeline only, never thesis data.\n" : "",
     "| architecture | deadline | games | decided by model (95% CI) | fallback | mean wait | p95 wait | requests / spell | element right | rules would be right | cost / hour | worst tick |",
