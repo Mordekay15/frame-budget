@@ -29,7 +29,6 @@ async function detectServer() {
   sel.querySelector('[value="server"]').disabled = !serverOk;
   if (!serverOk) {
     sel.value = "offline";
-    $("server-note").textContent = "No Jev key on the server, so the offline demo answers (keyword rules + Jev-like delay).";
   }
 }
 
@@ -137,10 +136,6 @@ input.addEventListener("input", () => layer?.onTyping(input.value, performance.n
 input.addEventListener("keydown", (e) => { if (e.key === "Enter") cast(); });
 $("cast-btn").addEventListener("click", cast);
 $("start-btn").addEventListener("click", start);
-$("arch").addEventListener("change", () => {
-  $("arch-help").textContent = $("arch").selectedOptions[0].dataset.help;
-});
-$("arch").dispatchEvent(new Event("change"));
 
 fieldGuide();
 detectServer();
