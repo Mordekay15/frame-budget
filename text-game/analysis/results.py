@@ -180,6 +180,36 @@ def sweep_tables(t, c, games):
           "Outcome depends on the bot as much as on the decisions; reported for completeness.", align="llrrr")
 
 
+def consistency_table(t, spells):
+    """Architecture-level consistency: does a spell cast again in the same game get the same decision?
+
+    A game is one (arch, deadline, skill, seed); the `game` column alone repeats across conditions.
+    Every cast of a text after its first one in a game is a repeat. The decision is the applied
+    element + target + power, whoever made it (Jev, cache, prefetch or the keyword rules)."""
+    key = ["arch", "deadline_ms", "skill", "seed"]
+    s = spells.sort_values(key + ["n"]).copy()
+    s["dec"] = s.element + "|" + s.target + "|" + s.power
+    g = s.groupby(key + ["text"])
+    s["first_dec"], s["first_el"], s["k"] = g.dec.transform("first"), g.element.transform("first"), g.cumcount()
+    r = s[s.k > 0].assign(same=lambda x: x.dec == x.first_dec, same_el=lambda x: x.element == x.first_el)
+    per_game = r.groupby(key).agg(same=("same", "mean"), same_el=("same_el", "mean"), n=("same", "size")).reset_index()
+
+    rows = []
+    order = [("rules", 0), ("blocking", 0)] + [(a, d) for a in ARCHS for d in DEADLINES]
+    for arch, d in order:
+        pg = per_game[(per_game.arch == arch) & (per_game.deadline_ms == d)]
+        if pg.empty:
+            continue
+        rows.append([arch, dl_label(d), str(int(pg.n.sum())), f"{pct(pg.same.mean())} ± {100 * ci95(list(pg.same)):.0f}",
+                     pct(pg.same_el.mean())])
+    t.add("Consistency during play: repeated spells that get the same decision as their first cast", "sweep-consistency",
+          ["architecture", "deadline (frames)", "repeat casts", "same decision", "same element"], rows,
+          f"{len(r)} of {len(s)} casts repeat a spell already cast in the same game. Mean over games with a 95% CI over games. "
+          "Async loses consistency where the deadline sits inside the latency spread, so network timing picks Jev or the rules. "
+          "Cache is low at tight deadlines because the first cast falls back to the rules while Jev's late answer is stored, "
+          "so later casts switch to Jev's reading.", align="llrrr")
+
+
 # ------------------------------------------------------------------ figures
 
 def save(fig, name, out):
@@ -281,6 +311,7 @@ def main():
     t = Tables()
     step0_tables(t, s0, sweep_lat)
     sweep_tables(t, c, games)
+    consistency_table(t, spells)
     head = f"# Results tables\n\nFrom `{a.sweep}` ({len(games)} games, {len(spells)} spells) and {s0.file.nunique()} Step 0 runs ({len(s0)} requests). Made by analysis/results.py.\n"
     open(os.path.join(a.out, "tables.md"), "w").write(head + "\n" + "\n".join(t.md))
     open(os.path.join(a.out, "tables.tex"), "w").write("% needs \\usepackage{booktabs}\n" + "\n".join(t.tex))

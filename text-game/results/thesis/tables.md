@@ -82,3 +82,27 @@ Stronger bot players reuse spells more often (30% against 10%), so cache and pre
 | prefetch | 200 ms (6) | 7% | 0.1 | 19.2 |
 
 Outcome depends on the bot as much as on the decisions; reported for completeness.
+
+## Consistency during play: repeated spells that get the same decision as their first cast
+
+| architecture | deadline (frames) | repeat casts | same decision | same element |
+|---|---|---|---|---|
+| rules | – | 149 | 100% ± 0 | 100% |
+| blocking | – | 246 | 97% ± 3 | 100% |
+| async | 33 ms (1) | 149 | 100% ± 0 | 100% |
+| async | 167 ms (5) | 145 | 85% ± 14 | 89% |
+| async | 200 ms (6) | 197 | 92% ± 5 | 97% |
+| async | 233 ms (7) | 222 | 80% ± 13 | 86% |
+| async | 333 ms (10) | 231 | 95% ± 4 | 99% |
+| cache | 33 ms (1) | 169 | 43% ± 18 | 71% |
+| cache | 167 ms (5) | 214 | 51% ± 16 | 73% |
+| cache | 200 ms (6) | 171 | 69% ± 15 | 85% |
+| cache | 233 ms (7) | 236 | 92% ± 5 | 96% |
+| cache | 333 ms (10) | 230 | 99% ± 2 | 99% |
+| prefetch | 33 ms (1) | 244 | 77% ± 9 | 84% |
+| prefetch | 167 ms (5) | 233 | 93% ± 6 | 100% |
+| prefetch | 200 ms (6) | 217 | 98% ± 3 | 100% |
+| prefetch | 233 ms (7) | 230 | 99% ± 1 | 99% |
+| prefetch | 333 ms (10) | 224 | 99% ± 3 | 100% |
+
+3507 of 8419 casts repeat a spell already cast in the same game. Mean over games with a 95% CI over games. Async loses consistency where the deadline sits inside the latency spread, so network timing picks Jev or the rules. Cache is low at tight deadlines because the first cast falls back to the rules while Jev's late answer is stored, so later casts switch to Jev's reading.
